@@ -145,7 +145,7 @@ class MyApp(object):
                 data = packet[h_size:]
                  
                 self.TextTcp.insert(END, ' Data : ' + data)
-            elif protocol == 1 :
+            elif protocol == 1 and False :
 #               self.TextICMP.insert(END,"ICMP")     
                 u = iph_length + eth_length
                 icmph_length = 4
