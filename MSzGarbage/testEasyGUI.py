@@ -21,7 +21,9 @@ class MyApp(object):
     TextICMP = 0
     TextMAC = 0
     TextIP = 0
+    TextPacket = 0
     mainSocket = 0
+    nextPacket = 0
 
     def __init__(self, parent):
         self.root = parent
@@ -31,6 +33,8 @@ class MyApp(object):
  
         btn = Tk.Button(self.frame, text="Start Sniffing", command=self.CreateSocketConnection)
         btn.pack()
+        self.TextPacket = Text(root, height=1, width=40)
+        self.TextPacket.pack()
         self.TextMAC = Text(root, height=2, width=200)
         self.TextMAC.pack()
         self.TextIP = Text(root, height=2, width=200)
@@ -108,9 +112,17 @@ class MyApp(object):
             s_addr = socket.inet_ntoa(iph[8]);
             d_addr = socket.inet_ntoa(iph[9]);
             self.TextIP.delete(1.0,END)
-            self.TextIP.insert(END, 'Version : ' + str(version) + ' IP Header Length : ' + str(ihl) + ' TTL : ' + str(ttl) + ' Protocol : ' + str(protocol) + ' Source Address : ' + str(s_addr) + ' Destination Address : ' + str(d_addr))
+            self.TextIP.insert(END, 'Version: ' + str(version) + ' IP Header Length: ' + str(ihl) + ' TTL : ' + str(ttl) + ' Protocol: ' + str(protocol) + ' Source Address: ' + str(s_addr) + ' Destination Address : ' + str(d_addr))
+
+            self.nextPacket = self.nextPacket + 1
+            self.TextPacket.delete(1.0,END)
+            self.TextPacket.insert(END, 'next: ' + str(self.nextPacket))
+
+            self.TextTcp.delete(1.0,END)
+            self.TextUdp.delete(1.0,END)
+            self.TextICMP.delete(1.0,END)
             if protocol == 6 :
-                self.TextTcp.delete(1.0,END)
+#               self.TextTcp.delete(1.0,END)
                 t = iph_length + eth_length
                 tcp_header = packet[t:t+20]
      
@@ -124,7 +136,7 @@ class MyApp(object):
                 doff_reserved = tcph[4]
                 tcph_length = doff_reserved >> 4
                  
-                self.TextTcp.insert(END,  'Source Port : ' + str(source_port) + ' Dest Port : ' + str(dest_port) + ' Sequence Number : ' + str(sequence) + ' Acknowledgement : ' + str(acknowledgement) + ' TCP header length : ' + str(tcph_length))
+                self.TextTcp.insert(END, ' Source Port: ' + str(source_port) + ' Dest Port: ' + str(dest_port) + ' Sequence Number: ' + str(sequence) + ' Acknowledgement: ' + str(acknowledgement) + ' TCP header length : ' + str(tcph_length))
                  
                 h_size = eth_length + iph_length + tcph_length * 4
                 data_size = len(packet) - h_size
@@ -134,8 +146,7 @@ class MyApp(object):
                  
                 self.TextTcp.insert(END, ' Data : ' + data)
             elif protocol == 1 :
-                self.TextIMPC.delete(1.0,END)
-                self.TextIMPC.insert(END,"ICMP")     
+#               self.TextICMP.insert(END,"ICMP")     
                 u = iph_length + eth_length
                 icmph_length = 4
                 icmp_header = packet[u:u+4]
@@ -147,7 +158,7 @@ class MyApp(object):
                 code = icmph[1]
                 checksum = icmph[2]
                  
-                self.TextIMPC( 'Type : ' + str(icmp_type) + ' Code : ' + str(code) + ' Checksum : ' + str(checksum))
+                self.TextICMP( 'Type : ' + str(icmp_type) + ' Code : ' + str(code) + ' Checksum : ' + str(checksum))
                  
                 h_size = eth_length + iph_length + icmph_length
                 data_size = len(packet) - h_size
@@ -155,23 +166,23 @@ class MyApp(object):
                 #get data from the packet
                 data = packet[h_size:]
                  
-                self.TextIMPC( ' Data : ' + data) 
+                self.TextICMP( ' Data : ' + data) 
             elif protocol == 17 :
-                self.TextUdp.delete(1.0,END)
+#               self.TextUdp.delete(1.0,END)
                 self.TextUdp.insert(END,"UDP")  
                 u = iph_length + eth_length
                 udph_length = 8
                 udp_header = packet[u:u+8]
      
                 #now unpack them :)
-                udph = unpack('!HHHH' , udp_header)
+                udph = unpack('!HHHH', udp_header)
                  
                 source_port = udph[0]
                 dest_port = udph[1]
                 length = udph[2]
                 checksum = udph[3]
                  
-                self.TextUdp.insert(END,'Source Port : ' + str(source_port) + ' Dest Port : ' + str(dest_port) + ' Length : ' + str(length) + ' Checksum : ' + str(checksum))
+                self.TextUdp.insert(END,' Source Port : ' + str(source_port) + ' Dest Port : ' + str(dest_port) + ' Length : ' + str(length) + ' Checksum : ' + str(checksum))
                  
                 h_size = eth_length + iph_length + udph_length
                 data_size = len(packet) - h_size
