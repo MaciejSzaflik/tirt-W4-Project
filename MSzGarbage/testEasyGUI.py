@@ -5,6 +5,8 @@ import socket, sys
 from struct import *
 import threading
 
+import signal
+
 class myThread (threading.Thread):
     def __init__(self, threadID, name, mainObject):
         threading.Thread.__init__(self)
@@ -34,6 +36,8 @@ class MyApp(object):
         self.frame.pack()
         
         self.root.protocol('WM_DELETE_WINDOW', self.stop_running)
+        signal.signal(signal.SIGINT, self.stop_signal)
+        signal.signal(signal.SIGTSTP, self.stop_signal)
  
         btn = Tk.Button(self.frame, text="Start Sniffing", command=self.CreateSocketConnection)
         btn.pack()
@@ -54,6 +58,10 @@ class MyApp(object):
         self.root.withdraw()
         
     def stop_running(self):
+        self.running = 0
+        self.root.destroy()
+        
+    def stop_signal(self, signal, frame):
         self.running = 0
         self.root.destroy()
  
@@ -211,3 +219,4 @@ if __name__ == "__main__":
     root.geometry("800x600")
     app = MyApp(root)
     root.mainloop()
+
