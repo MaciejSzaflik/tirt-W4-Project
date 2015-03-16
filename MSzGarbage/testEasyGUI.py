@@ -25,11 +25,15 @@ class MyApp(object):
     mainSocket = 0
     nextPacket = 0
 
+    running = 1
+
     def __init__(self, parent):
         self.root = parent
         self.root.title("Main frame")
         self.frame = Tk.Frame(parent)
         self.frame.pack()
+        
+        self.root.protocol('WM_DELETE_WINDOW', self.stop_running)
  
         btn = Tk.Button(self.frame, text="Start Sniffing", command=self.CreateSocketConnection)
         btn.pack()
@@ -48,6 +52,10 @@ class MyApp(object):
         
     def hide(self):
         self.root.withdraw()
+        
+    def stop_running(self):
+        self.running = 0
+        self.root.destroy()
  
     def CreateSocketConnection(self):
         if self.mainSocket == 0 :
@@ -77,7 +85,7 @@ class MyApp(object):
         
         
     def simpleReadingThread(self,threadName, obj):
-        while True :
+        while self.running == 1 :
             obj.readPacketFromSocket(obj)
             
             
@@ -145,7 +153,7 @@ class MyApp(object):
                 data = packet[h_size:]
                  
                 self.TextTcp.insert(END, ' Data : ' + data)
-            elif protocol == 1 :
+            elif protocol == 1 & False:
 #               self.TextICMP.insert(END,"ICMP")     
                 u = iph_length + eth_length
                 icmph_length = 4
