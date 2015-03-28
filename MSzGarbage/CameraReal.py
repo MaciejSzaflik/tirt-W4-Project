@@ -1,6 +1,6 @@
 __author__ = 'maciej'
 import cv2
-import Image
+from PIL import Image
 import StringIO
 
 
