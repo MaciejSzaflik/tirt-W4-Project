@@ -10,8 +10,16 @@ class CameraReal(object):
         self.pathToFile = pathToFile
         if self.fromFile:
             self.videoFile = cv2.VideoCapture(pathToFile)
+            while not self.videoFile.isOpened():
+                self.videoFile = cv2.VideoCapture(pathToFile)
+                cv2.waitKey(1000)
+                print "Wait for the header file"
         else:
             self.cam = cv2.VideoCapture(0)
+            while not self.cam.isOpened():
+                self.cam = cv2.VideoCapture(0)
+                cv2.waitKey(1000)
+                print "Wait for the header video"
 
     def get_frame(self):
         if self.fromFile:
