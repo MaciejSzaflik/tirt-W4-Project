@@ -2,7 +2,8 @@ __author__ = 'maciej'
 
 #!/usr/bin/env python
 from flask import Flask, render_template, Response
-from Camera import Camera
+from CameraReal import CameraReal
+
 
 app = Flask(__name__)
 
@@ -18,7 +19,7 @@ def gen(camera):
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(gen(Camera()),
+    return Response(gen(CameraReal()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
