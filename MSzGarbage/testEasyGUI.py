@@ -27,6 +27,12 @@ class MyApp(object):
     mainSocket = 0
     nextPacket = 0
 
+    FileTCP = 0
+    FileUDP = 0
+
+    nextTCP = 0
+    nextUDP = 0
+
     running = 1
 
     def __init__(self, parent):
@@ -53,16 +59,23 @@ class MyApp(object):
         self.TextUdp.pack()
         self.TextICMP = Text(root, height=4, width=200)
         self.TextICMP.pack()
+
+        self.FileTCP = open('tcp.txt', 'w')
+        self.FileUDP = open('udp.txt', 'w')
         
     def hide(self):
         self.root.withdraw()
         
     def stop_running(self):
         self.running = 0
+        self.FileTCP.close()
+        self.FileUDP.close()
         self.root.destroy()
         
     def stop_signal(self, signal, frame):
         self.running = 0
+        self.FileTCP.close()
+        self.FileUDP.close()
         self.root.destroy()
  
     def CreateSocketConnection(self):
@@ -106,7 +119,7 @@ class MyApp(object):
         eth = unpack('!6s6sH' , eth_header)
         eth_protocol = socket.ntohs(eth[2])
         self.TextMAC.delete(1.0,END)
-        self.TextMAC.insert(END,'Destination MAC : ' + self.eth_addr(packet[0:6]) + ' Source MAC : ' + self.eth_addr(packet[6:12]) + ' Protocol : ' + str(eth_protocol))
+        self.TextMAC.insert(END, 'Destination MAC : ' + self.eth_addr(packet[0:6]) + ' Source MAC : ' + self.eth_addr(packet[6:12]) + ' Protocol : ' + str(eth_protocol))
      
         #Parse IP packets, IP Protocol number = 8
         if eth_protocol == 8 :
@@ -162,6 +175,18 @@ class MyApp(object):
                  
                 self.TextTcp.insert(END, ' Data : ' + data)
 
+                if (len(data)) > 0 and self.nextTCP < 20 :
+                    self.FileTCP.write('TCP #' + str(self.nextTCP) + ': Source Port: ' + str(source_port) + '; Dest Port: ' + str(dest_port) + '; Sequence Number: ' + str(sequence) + '; Acknowledgement: ' + str(acknowledgement) + '; TCP header length: ' + str(tcph_length) + '\nData (' + str(len(data)) + '):\n' + data + '\n\n\n')
+
+                    ffile = open('jpg' + str(self.nextTCP) + '.jpeg', 'w')
+                    ffile.write(data)
+                    ffile.close()
+                    ffile = open('raw' + str(self.nextTCP) + '.raw', 'w')
+                    ffile.write(packet)
+                    ffile.close()
+
+                self.nextTCP = self.nextTCP + 1
+
             elif protocol == 1 and False :
 #               self.TextICMP.insert(END,"ICMP")     
                 u = iph_length + eth_length
@@ -208,6 +233,10 @@ class MyApp(object):
                 data = packet[h_size:]
                  
                 self.TextUdp.insert(END, ' Data : ' + data)
+
+                self.FileUDP.write('UDP #' + str(self.nextUDP) + ': Source Port : ' + str(source_port) + ' Dest Port : ' + str(dest_port) + ' Length : ' + str(length) + ' Checksum : ' + str(checksum) + '\nData (' + str(len(data)) + '):\n' + data + '\n\n\n')
+
+                self.nextUDP = self.nextUDP + 1
  
     def eth_addr(self,a):
         b = "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x" % (ord(a[0]) , ord(a[1]) , ord(a[2]), ord(a[3]), ord(a[4]) , ord(a[5]))
