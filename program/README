@@ -1,0 +1,7 @@
+Nadanie uprawnień:
+
+chmod +x sniffer.sh
+
+chmod +x http_stream.sh
+
+chmod +x tcpdump_and_foremost.sh
