@@ -35,7 +35,7 @@ def receiveData(data, body, id, object):
 
 ######
 # part of GUI
-# decyduje czy strumieniować czy tylko pokazać co jest w środku
+# decyduje czy strumieniowac czy tylko pokazac co jest w srodku
 #####
 
 def displayData(data, data_type, data_body, id, object, which):
@@ -180,11 +180,6 @@ def decipherWhatIsInside(packet, nextNr, object):
 
             if (len(data)) > 0 :#and nextNr < 20 :
                 checkVideo(data, body, nextNr, object)
-                #FileTCP.write('TCP #' + str(nextNr) + ': Source Port: ' +
-                 #                  str(source_port) + '; Dest Port: ' + str(dest_port) +
-                  #                 '; Sequence Number: ' + str(sequence) + '; Acknowledgement: ' +
-                   #                str(acknowledgement) + '; TCP header length: ' + str(tcph_length) +
-                    #               '\n\nData (' + str(len(data)) + '):\n' + data + '\n\n\n')
 
 def unpacker(packet, next_nr, object):
     decipherWhatIsInside(packet, next_nr, object)
@@ -203,7 +198,7 @@ class myThread (threading.Thread):
         self.name = name
         self.mainObject = mainObject
     def run(self):
-        print "alfa 0.1 testing"
+        print "alfa 0.2 testing"
         self.mainObject.readingThread("running",self.mainObject)
 
 
