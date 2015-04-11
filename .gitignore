@@ -1,4 +1,3 @@
 MSzGarbage/.idea/*
 
-*/CameraReal.pyc
-*/FrameFromFile.pyc
+*.pyc
