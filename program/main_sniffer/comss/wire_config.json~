@@ -1,0 +1,9 @@
+{"parametersHost": "localhost:11111",
+    "inputs": { },
+    "outputs": {
+      "wire_output": {
+        "ip": "127.0.0.1",
+        "port": 10071
+      }
+    }
+}
