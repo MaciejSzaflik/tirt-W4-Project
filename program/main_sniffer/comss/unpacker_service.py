@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from ComssServiceDevelopment.connectors.udp.multicast import InputMulticastConnector
 from ComssServiceDevelopment.service import Service, ServiceController
+import time
 
 class UnpackerService(Service): 
 
@@ -14,9 +15,13 @@ class UnpackerService(Service):
     def run(self):	#główna metoda usługi
         wire_input = self.get_input("wireInput") #obiekt interfejsu wyjściowego
 
-        while self.running():   #pętla główna usługi
-            data = wire_input.read();
-            print data
+        while self.running():   #pętla główna 
+            try:
+                data = wire_input.read()
+                print data
+            except EOFError:
+                pass
+                
 
 if __name__=="__main__":
     sc = ServiceController(UnpackerService, "unpacker_service.json")
