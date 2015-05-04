@@ -1,6 +1,8 @@
 __author__ = 'maciej'
+__editor__ = 'michalvvv'
 
 #!/usr/bin/env python
+import sys
 from flask import Flask, render_template, Response
 from CameraReal import CameraReal
 from FrameFromFile import FrameReader
@@ -24,5 +26,11 @@ def video_feed():
     return Response(gen(FrameReader('small.mp4')),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+def num(s):
+    try:
+        return int(s[1])
+    except:
+        return 5000
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=True, port=num(sys.argv))

@@ -1,9 +1,11 @@
-{"parametersHost": "localhost:11112",
-"inputs": {
-  "wireInput": {
-     "ip": "127.0.0.1",
-     "port": 10071
-  }
-},
-"outputs": {}
+{
+  "parametersHost": "localhost:10071",
+  "inputs": {
+    "wireInput": {
+      "ip": "127.0.0.1",
+      "port": 10071
+    }
+  },
+  "outputs": {}
 }
+
