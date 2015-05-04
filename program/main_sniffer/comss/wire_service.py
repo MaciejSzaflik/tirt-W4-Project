@@ -110,3 +110,4 @@ class WireService(Service):
 if __name__=="__main__":
     sc = ServiceController(WireService, "wire_service.json")
     sc.start()
+
