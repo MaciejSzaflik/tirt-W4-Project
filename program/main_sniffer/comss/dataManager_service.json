@@ -1,0 +1,14 @@
+{"parametersHost": "localhost:11113",
+"inputs": {
+  "videoCheckerInput": {
+     "ip": "127.0.0.1",
+     "port": 10072
+  }
+},
+"outputs": {
+  "dataManagerOutput": {
+     "ip": "127.0.0.1",
+     "port": 10073
+    }
+}
+}
