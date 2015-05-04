@@ -8,28 +8,16 @@ import socket, sys
 from struct import *
 import threading
 
-import signal
-
 class WireService(Service):
-
-    TextPacket = 0
     mainSocket = 0
-    nextPacket = 0
-
-    nextTCP = 0
-    nextUDP = 0
-
     running = 1
 
-    nextPCK = 0
-
-    def declare_inputs(self):
+    def declare_inputs(self):	#deklaracja wejść
         pass
         
     def declare_outputs(self):	#deklaracja wyjść
         self.declare_output("wireOutput", OutputMulticastConnector(self))
         self.createSocketConnection()
-
 
     # GŁÓWNA METODA USŁUGI
     def run(self):
@@ -42,28 +30,18 @@ class WireService(Service):
         if self.mainSocket == 0:
             try:
                 self.mainSocket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
+                print "running v0.3"
             except socket.error, msg:
                 print 'Socket could not be created. Error Code: ' + str(msg[0]) + ' Message ' + msg[1]
                 sys.exit()
-            #try:
-                #thread1 = myThread(1, "alfa", self)
-                #thread1.start()
-            #except:
-            #    print "Error: unable to start thread"
         else:
             print("pff")
     
     def readPacketFromSocket(self):
-    
-        packet = self.mainSocket.recvfrom(16384)#65535)
-        # print packet
+        packet = self.mainSocket.recvfrom(65535)
         packetData = self.decipherWhatIsInside(packet)
         if packetData and (packetData['source']['port'] < 10070 or packetData['source']['port'] > 10080):
             self.wire_output.send(packet)
-        
-    def eth_addr(self,a):
-        b = "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x" % (ord(a[0]) , ord(a[1]) , ord(a[2]), ord(a[3]), ord(a[4]) , ord(a[5]))
-        return b
 
     def decipherWhatIsInside(self, packet):
         #parse ethernet header
@@ -97,7 +75,6 @@ class WireService(Service):
                 t = iph_length + eth_length
                 tcp_header = packet[t:t+20]
 
-                #now unpack them :)
                 tcph = unpack('!HHLLBBHHH' , tcp_header)
 
                 source_port = tcph[0]
