@@ -76,6 +76,7 @@ class dataManager(object):
             'height': 800
         }
     }
+    lastSelected = None
 
     def __init__(self):
         self.applyFilter()
@@ -132,7 +133,10 @@ class dataManager(object):
         return body
 
     def onGUISelectStream(self, key):
+        if not self.lastSelected == None:
+            self.storage[self.lastSelected] = 'small'
         self.storage[key] = 'big'
+        lastSelected = key
 
     def onGUIUnselectStream(self, key):
         self.storage[key] = 'small'
