@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from ComssServiceDevelopment.connectors.udp.multicast import OutputMulticastConnector
+from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import OutputStreamConnector
 from ComssServiceDevelopment.service import Service, ServiceController
 
 import socket, sys
@@ -16,7 +16,7 @@ class WireService(Service):
         pass
         
     def declare_outputs(self):	#deklaracja wyjść
-        self.declare_output("wireOutput", OutputMulticastConnector(self))
+        self.declare_output("wireOutput", OutputStreamConnector(self))
         self.createSocketConnection()
 
     # GŁÓWNA METODA USŁUGI
@@ -40,8 +40,8 @@ class WireService(Service):
     def readPacketFromSocket(self):
         packet = self.mainSocket.recvfrom(65535)
         packetData = self.decipherWhatIsInside(packet)
-        if packetData and (packetData['source']['port'] < 10070 or packetData['source']['port'] > 10080):
-            self.wire_output.send(packet)
+        if packetData and packetData['data'] and (packetData['data']['source']['port'] < 10070 or packetData['data']['source']['port'] > 10080):
+            self.wire_output.send(packetData['body'])
 
     def decipherWhatIsInside(self, packet):
         #parse ethernet header
@@ -105,9 +105,11 @@ class WireService(Service):
                 data['tcph_length'] = tcph_length
                 data['h_size'] = h_size
 
-                return data
+                packetData = {}
+                packetData['data'] = data
+                packetData['body'] = body
+                return packetData
 
 if __name__=="__main__":
     sc = ServiceController(WireService, "wire_service.json")
     sc.start()
-

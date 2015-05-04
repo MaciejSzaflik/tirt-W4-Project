@@ -3,7 +3,7 @@
 "inputs": {
   "dataManagerInput": {
      "ip": "127.0.0.1",
-     "port": 10074
+     "port": 10073
     }
 }
 }

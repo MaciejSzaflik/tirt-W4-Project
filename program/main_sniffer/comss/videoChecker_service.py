@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import InputStreamConnector
-from ComssServiceDevelopment.connectors.udp.multicast import OutputMulticastConnector
+from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import OutputStreamConnector
 from ComssServiceDevelopment.service import Service, ServiceController
 import socket, sys
 import time
@@ -21,23 +21,7 @@ class VideoCheckerService(Service):
         self.declare_input("wireInput", InputStreamConnector(self))
         
     def declare_outputs(self):
-        self.declare_output("videoCheckerOutput", OutputMulticastConnector(self))
-        #self.createSocketConnection()
-        
-    def createSocketConnection(self):
-        if self.mainSocket == 0:
-            try:
-                self.mainSocket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
-            except socket.error, msg:
-                print 'Socket could not be created. Error Code: ' + str(msg[0]) + ' Message ' + msg[1]
-                sys.exit()
-            #try:
-                #thread1 = myThread(1, "alfa", self)
-                #thread1.start()
-            #except:
-            #    print "Error: unable to start thread"
-        else:
-            print("pff")
+        self.declare_output("videoCheckerOutput", OutputStreamConnector(self))
         
     def checkJPG(self, imgarray):
         try:
@@ -62,6 +46,7 @@ class VideoCheckerService(Service):
         print "VideoChecker service started!"
         
         wire_input = self.get_input("wireInput")
+        videoCheckerOutput = self.get_output("videoCheckerOutput")
 
         while self.running == 1:   #pętla główna
             try:
@@ -74,14 +59,17 @@ class VideoCheckerService(Service):
                     #wire_input['data']['body_type'] = 'jpg'
                     #manage(data, wire_input['body'], id, object)
                     print "1"
+                    videoCheckerOutput.send(imgarray)
                 elif self.checkJPG(imgarray[37:]):
                     #wire_input['data']['body_type'] = 'jpg'
                     #manage(data, wire_input['body'][37:], id, object)
                     print "2"
+                    videoCheckerOutput.send(imgarray)
                 elif self.anotherCheck(imgarray):
                     #wire_input['data']['body_type'] = 'never accessed here'
                     #manage(data, imgarray, id, object)
                     print "3"
+                    videoCheckerOutput.send(imgarray)
             except EOFError:
                 print "EOFError"
                 pass

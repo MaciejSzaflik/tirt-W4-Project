@@ -24,7 +24,8 @@ class GuiService(Service):
         dataManager_input = self.get_input("dataManagerInput")
         print "Gui service started."
         while self.running == 1:
-            print dataManager_input.read()
+            toDisplay = dataManager_input.read()
+            print toDisplay
 
 if __name__=="__main__":
     sc = ServiceController(GuiService, "gui_service.json")

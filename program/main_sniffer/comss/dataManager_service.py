@@ -19,13 +19,13 @@ class DataManagerService(Service):
         print "DataManager service started!"
         
         videoChecker_input = self.get_input("videoCheckerInput")
-        #dataManager_output = self.get_output("dataManagerOutput")
+        dataManager_output = self.get_output("dataManagerOutput")
 
         while self.running == 1:   #pętla główna
             try:
                 imgarray = videoChecker_input.read() #obiekt interfejsu
-                print imgarray
-                #dataManager_output.send(imgarray)
+                #print imgarray
+                dataManager_output.send(imgarray)
                 
             except EOFError:
                 print "EOFError"
