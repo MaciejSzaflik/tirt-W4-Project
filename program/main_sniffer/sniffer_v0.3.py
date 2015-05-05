@@ -18,44 +18,22 @@ import signal
 #####################################################################
 
 gui_memory = {}
-def receiveData(data, body, id, object):
-    which = 0
-
-    if len(gui_memory) == 0:
-        which = 0
-    else:
-        which = 1
-
-    key = data['source']['address'] + str(data['source']['port']) + data['target']['address'] + str(data['target']['port'])
-
+def GUIAddStream(key, data):
     if gui_memory.get(key, None) == None:
-        gui_memory[key] = which
+        gui_memory[key] = len(gui_memory)
 
-    displayData(data, data['body_type'], body, id, object, gui_memory[key])
-
-######
-# part of GUI
-# decyduje czy strumieniowac czy tylko pokazac co jest w srodku
-#####
-
-def displayData(data, data_type, data_body, id, object, which):
-    if data_type == 'jpg':
+def GUInextPacket(key, data_type, data_body, id, object):
+    if data_type == 'http':
         im = Image.open(StringIO(data_body))
         try:
             im.load()
         except IOError:
             pass
-
+        which = gui_memory[key]
         if which == 0:
             object.setImage(im)
         elif which == 1:
             object.setImage2(im)
-
-#    import json
- #   print json.dumps(data['target'], sort_keys=True,
-  #                indent=4, separators=(',', ': '))
-    #print('type ', im.format, im.size, im.mode)
-    #im.save('temp/img' + str(id) + '.jpg', format=im.format)
 
 
 #####################################################################
@@ -65,9 +43,134 @@ def displayData(data, data_type, data_body, id, object, which):
 #####################################################################
 
 def manage(data, parsedVideoPacket_data, id, object):
-    receiveData(data, parsedVideoPacket_data, id, object)
+    manager.receiveData(data, parsedVideoPacket_data, id, object)
+    
 
+##
+## Klasa zarzadzajaca pamiecia aplikacji. Wysyla powiadomienia do GUI o nowych strumieniach i wysyla kolejne pakiety.
+## Wymaga, aby GUI posiadalo obsluge:
+##    GUI.addStream(key, packetData) - dodawanie nowego strumienia i miniatury
+##    GUI.removeStream(key) - usuwanie strumienia i miniatury
+##    GUI.nextPacket(key, packetData['body_type'], body) - przeslanie kolejnego pakietu wraz z podaniem typu
+##
+## Ponadto klasa udostepnia nastepujace metody dla GUI:
+##    onGUISetFilter(data) - ustawia filtr dla polaczen
+##    onGUISelectStream(key) - zmiana rozmiaru wysylanego strumienia na wiekszy
+##    onGUIUnselectStream(key) - zmiana rozmiaru wysylanego strumienia na mniejszy
+##    onGUISetSize(size, width, height) - zmiana rozdzielczosci wyswietlania
+##
+class dataManager(object):
+    filterOptions = {
+        'source_port_start': 6000,
+        'source_port_end': 7999,
+        'http': True
+    }
+    storage = {}
+    sizeOptions = {
+        'small': {
+            'width': 300,
+            'height': 200
+        },
+        'big': {
+            'width': 1000,
+            'height': 800
+        }
+    }
+    lastSelected = None
 
+    def __init__(self):
+        self.applyFilter()
+
+    def setFilterValue(self, data, value):
+        if not data.get(value, None) == None:
+            self.filterOptions[value] = data.get(value, None)
+
+    def onGUISetFilter(self, data):
+        setFilterValue(data, 'source_addres_start')
+        setFilterValue(data, 'source_addres_end')
+        setFilterValue(data, 'source_port_start')
+        setFilterValue(data, 'source_port_end')
+
+        setFilterValue(data, 'target_addres_start')
+        setFilterValue(data, 'target_addres_end')
+        setFilterValue(data, 'target_port_start')
+        setFilterValue(data, 'target_port_end')
+        setFilterValue(data, 'http')
+
+        self.applyFilter()
+
+    def applyFilter(self):
+        for key in self.storage:
+            if not self.checkInFilter(self.storage[key]):
+                self.GUIRemoveStream(key)
+
+    def between(self, value, name):
+        return value >= self.filterOptions.get(name + '_start', 0) and value <= self.filterOptions.get(name + '_end', 10000000)
+
+    def equals(self, packetData, name):
+        return self.filterOptions.get(packetData.get(name, None))
+
+    def checkInFilter(self, packetData):
+        return (self.between(packetData['source']['port'], 'source_port') and
+          self.between(packetData['target']['port'], 'target_port') and
+          #self.between(packetData['source']['address'], 'source_addres') and
+          #self.between(packetData['target']['address'], 'target_addres') and
+          self.equals(packetData, 'body_type'))
+
+    def saveNewPacket(self, packetData):
+        key = self.createKey(packetData)
+        self.storage[key] = 'small'
+        self.GUIAddStream(key, packetData)
+
+    def createKey(self, packetData):
+        return packetData['source']['address'] + str(packetData['source']['port']) + packetData['target']['address'] + str(packetData['target']['port'])
+
+    def checkLocally(self, packetData):
+        return not self.storage.get(self.createKey(packetData), None) == None
+
+    def resizeBody(self, body, size):
+        # somehow resize body witch self.resizeOptions[size]
+        return body
+
+    def onGUISelectStream(self, key):
+        if not self.lastSelected == None:
+            self.storage[self.lastSelected] = 'small'
+        self.storage[key] = 'big'
+        lastSelected = key
+
+    def onGUIUnselectStream(self, key):
+        self.storage[key] = 'small'
+
+    def onGUISetSize(self, size, width, height):
+        self.sizeOptions[size] = {
+            'width': width,
+            'height': height
+        }
+
+    def GUIAddStream(self, key, packetData):
+        print "GUIAddStream " + key
+        GUIAddStream(key, packetData)
+
+    def GUIRemoveStream(self, key):
+        print "GUIRemoveStream " + key
+        #GUIRemoveStream(key)
+
+    def notifyGUI(self, packetData, parsedVideoPacket_data, id, object):# last 3 args are to be removed
+        key = self.createKey(packetData)
+        #print "notify " + key
+        #GUInextPacket(key, packetData['body_type'], self.resizeBody(body, self.storage.get(key)))
+        GUInextPacket(key, packetData['body_type'], self.resizeBody(parsedVideoPacket_data, self.storage.get(key)), id, object)
+
+    # action to be added in main LOOP of comss
+    def receiveData(self, packetData, parsedVideoPacket_data, id, object):
+        if self.checkLocally(packetData):
+            self.notifyGUI(packetData, parsedVideoPacket_data, id, object)
+        else:
+            if self.checkInFilter(packetData):
+                self.saveNewPacket(packetData)
+                self.notifyGUI(packetData, parsedVideoPacket_data, id, object)
+
+manager = dataManager()
 
 #####################################################################
 ##                                                                 ##
@@ -94,10 +197,10 @@ def anotherCheck(imgarray):
 
 def checkVideo(data, imgarray, id, object):
     if checkJPG(imgarray):
-        data['body_type'] = 'jpg'
+        data['body_type'] = 'http'
         manage(data, imgarray, id, object)
     elif checkJPG(imgarray[37:]):
-        data['body_type'] = 'jpg'
+        data['body_type'] = 'http'
         manage(data, imgarray[37:], id, object)
     elif anotherCheck(imgarray):
         data['body_type'] = 'never accessed here'
