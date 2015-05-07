@@ -12,8 +12,10 @@ from PIL import Image, ImageTk
 
 from cStringIO import StringIO
 
-class VideoCheckerService(Service):
+from Coder.encode import encode
+from Coder.decode import decode
 
+class VideoCheckerService(Service):
     mainSocket = 0
     running = 1
 
@@ -26,7 +28,10 @@ class VideoCheckerService(Service):
     def checkJPG(self, imgarray):
         try:
             im = Image.open(StringIO(imgarray))
-        except IOError:
+        except IOError, e:
+            #print "cannot im = Image.open"
+            return False
+        except:
             #print "cannot im = Image.open"
             return False
 
@@ -35,6 +40,9 @@ class VideoCheckerService(Service):
         except IOError:
             #print "cannot im.load"
             pass
+        except:
+            #print "cannot im = Image.open"
+            return False
 
         return True
 
@@ -50,26 +58,35 @@ class VideoCheckerService(Service):
 
         while self.running == 1:   #pętla główna
             try:
-                imgarray = wire_input.read() #obiekt interfejsu 
-                #if wire_input['body']:
-                #print "\n\n"
-                #print imgarray
+                data = wire_input.read() #obiekt interfejsu
 
-                if self.checkJPG(imgarray):
-                    #wire_input['data']['body_type'] = 'jpg'
-                    #manage(data, wire_input['body'], id, object)
-                    print "1"
-                    videoCheckerOutput.send(imgarray)
-                elif self.checkJPG(imgarray[37:]):
-                    #wire_input['data']['body_type'] = 'jpg'
-                    #manage(data, wire_input['body'][37:], id, object)
-                    print "2"
-                    videoCheckerOutput.send(imgarray)
-                elif self.anotherCheck(imgarray):
-                    #wire_input['data']['body_type'] = 'never accessed here'
-                    #manage(data, imgarray, id, object)
-                    print "3"
-                    videoCheckerOutput.send(imgarray)
+                try:
+                    packetData = decode(data)
+                    if not packetData == None:
+                        imgarray = packetData['body']
+
+                        if self.checkJPG(imgarray):
+                            packetData['data']['body_type'] = 'http'
+                            print "1"
+                            videoCheckerOutput.send(encode(packetData, imgarray))
+                        elif self.checkJPG(imgarray[37:]):
+                            packetData['data']['body_type'] = 'http'
+                            try:
+                                f = open('videoChecker.jpg', 'w')
+                                f.write(imgarray[37:])
+                                f.close()
+                            except IOError, e:
+                                print e.message
+                            print "2"
+                            videoCheckerOutput.send(encode(packetData['data'], imgarray[37:]))
+                        elif self.anotherCheck(imgarray):
+                            packetData['data']['body_type'] = 'never accessed here'
+                            print "3"
+                            videoCheckerOutput.send(encode(packetData, imgarray))
+
+                except Exception, e:
+                    pass
+
             except EOFError:
                 print "EOFError"
                 pass

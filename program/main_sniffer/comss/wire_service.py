@@ -8,6 +8,11 @@ import socket, sys
 from struct import *
 import threading
 
+from cStringIO import StringIO
+from PIL import Image, ImageTk
+
+from Coder.encode import encode
+
 class WireService(Service):
     mainSocket = 0
     running = 1
@@ -40,8 +45,14 @@ class WireService(Service):
     def readPacketFromSocket(self):
         packet = self.mainSocket.recvfrom(65535)
         packetData = self.decipherWhatIsInside(packet)
-        if packetData and packetData['data'] and (packetData['data']['source']['port'] < 10070 or packetData['data']['source']['port'] > 10080):
-            self.wire_output.send(packetData['body'])
+        if packetData and packetData['data'] and (packetData['data']['source']['port'] < 10070 or packetData['data']['source']['port'] > 10081) and (packetData['data']['target']['port'] < 10070 or packetData['data']['target']['port'] > 10081):
+            try:
+                f = open('wire.jpg', 'w')
+                f.write(packetData['body'][37:])
+                f.close()
+            except IOError, e:
+                print e.message
+            self.wire_output.send(encode(packetData['data'], packetData['body']))
 
     def decipherWhatIsInside(self, packet):
         #parse ethernet header

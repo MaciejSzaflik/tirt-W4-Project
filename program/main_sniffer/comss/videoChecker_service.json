@@ -1,14 +1,16 @@
-{"parametersHost": "localhost:11112",
-"inputs": {
-  "wireInput": {
-     "ip": "127.0.0.1",
-     "port": 10071
-  }
-},
-"outputs": {
-  "videoCheckerOutput": {
-     "ip": "127.0.0.1",
-     "port": 10072
+{
+  "parametersHost": "localhost:10072",
+  "inputs": {
+    "wireInput": {
+      "ip": "127.0.0.1",
+      "port": 10075
     }
+  },
+  "outputs": {
+    "videoCheckerOutput": {
+      "ip": "127.0.0.1",
+      "port": 10076
+    }
+  }
 }
-}
+
