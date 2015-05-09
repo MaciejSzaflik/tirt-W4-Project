@@ -198,9 +198,8 @@ class GUI(threading.Thread):
         print "stopped"
         self.root.destroy()
 
-    def SIm(self, id, data_body):
-        try:
-            im = Image.open(StringIO(data_body))
+    def SIm(self, id, data_body, body_type):
+        if body_type == 'http':
             try:
                 im.load()
             except IOError:
@@ -281,13 +280,16 @@ class GuiService(Service):
         while self.running == 1:
             data = dataManager_input.read()
             packetData = decode(data)
+            
             if not packetData == None:
+            
                 if packetData['data']['type'] == 'id':
-                    #id is in packetData['data']['body']; more info in packetData['data']['data']
+                    #id is in packetData['body']; more info in packetData['data']['data']
                     self.gui.addStream(packetData)
                     pass
+                    
                 elif packetData['data']['type'] == 'packet':
-                    self.gui.SIm(packetData['data']['id'], packetData['body'])
+                    self.gui.SIm(packetData['data']['id'], packetData['body'], packetData['data']['body_type'])
 
 if __name__=="__main__":
     sc = ServiceController(GuiService, "gui_service.json")

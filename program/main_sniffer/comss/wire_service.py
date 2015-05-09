@@ -46,12 +46,12 @@ class WireService(Service):
         packet = self.mainSocket.recvfrom(65535)
         packetData = self.decipherWhatIsInside(packet)
         if packetData and packetData['data'] and (packetData['data']['source']['port'] < 10070 or packetData['data']['source']['port'] > 10081) and (packetData['data']['target']['port'] < 10070 or packetData['data']['target']['port'] > 10081):
-            try:
-                f = open('wire.jpg', 'w')
-                f.write(packetData['body'][37:])
-                f.close()
-            except IOError, e:
-                print e.message
+            #try:
+            #    f = open('wire.jpg', 'w')
+            #    f.write(packetData['body'][37:])
+            #    f.close()
+            #except IOError, e:
+            #    print e.message
             dataToSend = encode(packetData['data'], packetData['body'])
             #print "WIRE output data size: " + str(len(dataToSend))
             self.wire_output.send(dataToSend)

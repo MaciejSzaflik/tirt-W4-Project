@@ -5,9 +5,10 @@ from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import OutputMe
 from ComssServiceDevelopment.service import Service, ServiceController
 
 
+from ipaddress import *
+
 from Coder.encode import encode
 from Coder.decode import decode
-    
 
 ##
 ## Klasa zarzadzajaca pamiecia aplikacji. Wysyla powiadomienia do GUI o nowych strumieniach i wysyla kolejne pakiety.
@@ -18,28 +19,18 @@ from Coder.decode import decode
 ##
 ## Ponadto klasa udostepnia nastepujace metody dla GUI:
 ##    onGUISetFilter(data) - ustawia filtr dla polaczen
-##    onGUISelectStream(id) - zmiana rozmiaru wysylanego strumienia na wiekszy
-##    onGUIUnselectStream(id) - zmiana rozmiaru wysylanego strumienia na mniejszy
-##    onGUISetSize(size, width, height) - zmiana rozdzielczosci wyswietlania
 ##
 class dataManager(object):
     filterOptions = {
         'source_port_start': 6000,
         'source_port_end': 7999,
+        'source_addres_start': '127.0.0.1',
+        'source_addres_end': '127.0.0.1',
+        'target_addres_start': '127.0.0.1',
+        'target_addres_end': '127.0.0.1',
         'http': True
     }
     storage = {}
-    sizeOptions = {
-        'small': {
-            'width': 300,
-            'height': 200
-        },
-        'big': {
-            'width': 1000,
-            'height': 800
-        }
-    }
-    lastSelected = None
 
     def __init__(self):
         self.applyFilter()
@@ -67,17 +58,22 @@ class dataManager(object):
             if not self.checkInFilter(self.storage[id]):
                 self.GUIRemoveStream(id)
 
-    def between(self, value, name):
-        return value >= self.filterOptions.get(name + '_start', 0) and value <= self.filterOptions.get(name + '_end', 10000000)
+    def between(self, value, name, typ):
+        if typ == 'port':
+            return value >= self.filterOptions.get(name + '_start', 0) and value <= self.filterOptions.get(name + '_end', 10000000)
+        elif typ == 'ip':
+            return IPv4Address(value) >= IPv4Address(self.filterOptions.get(name + '_start')) and IPv4Address(value) <= IPv4Address(self.filterOptions.get(name + '_end'))
+        else:
+            return False
 
     def equals(self, packetData, name):
         return self.filterOptions.get(packetData.get(name, None))
 
     def checkInFilter(self, packetData):
-        return (self.between(packetData['source']['port'], 'source_port') and
-          self.between(packetData['target']['port'], 'target_port') and
-          #self.between(packetData['source']['address'], 'source_addres') and
-          #self.between(packetData['target']['address'], 'target_addres') and
+        return (self.between(packetData['source']['port'], 'source_port', 'port') and
+          self.between(packetData['target']['port'], 'target_port', 'port') and
+          self.between(packetData['source']['address'], 'source_addres', 'ip') and
+          self.between(packetData['target']['address'], 'target_addres', 'ip') and
           self.equals(packetData, 'body_type'))
 
     def saveNewPacket(self, packetData, dataManager_stream_output):
@@ -91,21 +87,6 @@ class dataManager(object):
     def checkLocally(self, packetData):
         return not self.storage.get(self.createId(packetData), None) == None
 
-    def onGUISelectStream(self, id):
-        if not self.lastSelected == None:
-            self.storage[self.lastSelected] = 'small'
-        self.storage[id] = 'big'
-        lastSelected = id
-
-    def onGUIUnselectStream(self, id):
-        self.storage[id] = 'small'
-
-    def onGUISetSize(self, size, width, height):
-        self.sizeOptions[size] = {
-            'width': width,
-            'height': height
-        }
-
     def GUIRemoveStream(self, id):
         print "GUIRemoveStream " + id
         #GUIRemoveStream(id)
@@ -113,7 +94,7 @@ class dataManager(object):
     def notifyGUI(self, packetData, parsedVideoPacket_data, dataManager_stream_output):
         id = self.createId(packetData)
         #GUInextPacket(id, packetData['body_type'], parsedVideoPacket_data)
-        dataManager_stream_output.send(encode({'type': 'packet', 'id': id}, parsedVideoPacket_data))
+        dataManager_stream_output.send(encode({'type': 'packet', 'id': id, 'body_type': packetData['body_type']}, parsedVideoPacket_data))
 
     # action to be added in main LOOP of comss
     def receiveData(self, packetData, parsedVideoPacket_data, dataManager_stream_output):
