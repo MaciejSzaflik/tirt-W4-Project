@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import InputStreamConnector
-from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import OutputStreamConnector
+from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import InputMessageConnector
+from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import OutputMessageConnector
 from ComssServiceDevelopment.service import Service, ServiceController
 import socket, sys
 import time
@@ -20,10 +20,10 @@ class VideoCheckerService(Service):
     running = 1
 
     def declare_inputs(self):
-        self.declare_input("wireInput", InputStreamConnector(self))
+        self.declare_input("wireInput", InputMessageConnector(self))
         
     def declare_outputs(self):
-        self.declare_output("videoCheckerOutput", OutputStreamConnector(self))
+        self.declare_output("videoCheckerOutput", OutputMessageConnector(self))
         
     def checkJPG(self, imgarray):
         try:
@@ -62,13 +62,16 @@ class VideoCheckerService(Service):
 
                 try:
                     packetData = decode(data)
+                    #print "VIDEOCHKR packetData size: " + str(len(data))
                     if not packetData == None:
                         imgarray = packetData['body']
 
                         if self.checkJPG(imgarray):
                             packetData['data']['body_type'] = 'http'
-                            print "1"
-                            videoCheckerOutput.send(encode(packetData, imgarray))
+                            #print "1"
+                            dataToSend = encode(packetData, imgarray)
+                            #print "VIDEOCHKR output data size: " + str(len(dataToSend))
+                            videoCheckerOutput.send(dataToSend)
                         elif self.checkJPG(imgarray[37:]):
                             packetData['data']['body_type'] = 'http'
                             try:
@@ -77,12 +80,16 @@ class VideoCheckerService(Service):
                                 f.close()
                             except IOError, e:
                                 print e.message
-                            print "2"
-                            videoCheckerOutput.send(encode(packetData['data'], imgarray[37:]))
+                            #print "2"
+                            dataToSend = encode(packetData['data'], imgarray[37:])
+                            #print "VIDEOCHKR output data size: " + str(len(dataToSend))
+                            videoCheckerOutput.send(dataToSend)
                         elif self.anotherCheck(imgarray):
                             packetData['data']['body_type'] = 'never accessed here'
-                            print "3"
-                            videoCheckerOutput.send(encode(packetData, imgarray))
+                            #print "3"
+                            dataToSend = encode(packetData, imgarray)
+                            #print "VIDEOCHKR output data size: " + str(len(dataToSend))
+                            videoCheckerOutput.send(dataToSend)
 
                 except Exception, e:
                     pass

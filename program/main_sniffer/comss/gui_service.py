@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import InputStreamConnector, OutputStreamConnector
+from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import InputMessageConnector, OutputMessageConnector
 from ComssServiceDevelopment.service import Service, ServiceController
 
 from struct import *
@@ -218,10 +218,10 @@ class GuiService(Service):
         #self.gui._stop_program()
 
     def declare_inputs(self):
-        self.declare_input("dataManagerStreamInput", InputStreamConnector(self))
+        self.declare_input("dataManagerStreamInput", InputMessageConnector(self))
         
     def declare_outputs(self):	#deklaracja wyjść
-        self.declare_output("guiOutput", OutputStreamConnector(self))
+        self.declare_output("guiOutput", OutputMessageConnector(self))
 
     # GŁÓWNA METODA USŁUGI
     def run(self):

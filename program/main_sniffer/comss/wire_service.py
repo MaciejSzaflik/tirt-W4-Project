@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import OutputStreamConnector
+from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import OutputMessageConnector
 from ComssServiceDevelopment.service import Service, ServiceController
 
 import socket, sys
@@ -21,7 +21,7 @@ class WireService(Service):
         pass
         
     def declare_outputs(self):	#deklaracja wyjść
-        self.declare_output("wireOutput", OutputStreamConnector(self))
+        self.declare_output("wireOutput", OutputMessageConnector(self))
         self.createSocketConnection()
 
     # GŁÓWNA METODA USŁUGI
@@ -52,7 +52,9 @@ class WireService(Service):
                 f.close()
             except IOError, e:
                 print e.message
-            self.wire_output.send(encode(packetData['data'], packetData['body']))
+            dataToSend = encode(packetData['data'], packetData['body'])
+            #print "WIRE output data size: " + str(len(dataToSend))
+            self.wire_output.send(dataToSend)
 
     def decipherWhatIsInside(self, packet):
         #parse ethernet header

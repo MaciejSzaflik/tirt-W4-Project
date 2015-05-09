@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import InputStreamConnector
-from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import OutputStreamConnector
+from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import InputMessageConnector
+from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import OutputMessageConnector
 from ComssServiceDevelopment.service import Service, ServiceController
 
 
@@ -134,11 +134,11 @@ class DataManagerService(Service):
         self.manager = dataManager()
 
     def declare_inputs(self):
-        self.declare_input("videoCheckerInput", InputStreamConnector(self))
-        self.declare_input("guiInput", InputStreamConnector(self))
+        self.declare_input("videoCheckerInput", InputMessageConnector(self))
+        self.declare_input("guiInput", InputMessageConnector(self))
 
     def declare_outputs(self):
-        self.declare_output("dataManagerStreamOutput", OutputStreamConnector(self))
+        self.declare_output("dataManagerStreamOutput", OutputMessageConnector(self))
 
     def run(self):	#główna metoda
     
@@ -150,10 +150,10 @@ class DataManagerService(Service):
         while self.running == 1:   #pętla główna
             try:
                 data = videoChecker_input.read() #obiekt interfejsu
-                #print data
                 
                 try:
                     packetData = decode(data)
+                    #print "DATAMGR packetData size: " + str(len(data))
                     if not packetData == None:
                         self.manager.receiveData(packetData['data'], packetData['body'], dataManager_stream_output)
                 except Exception, e:
