@@ -23,7 +23,7 @@ class FrameReader(object):
 
         time =  self.current_milli_time()
 
-        if time - self.currentTime >= 1000/17:
+        if time - self.currentTime >= 1000/2:
             self.currentTime = time
             self.counter+=1
             if self.counter >= len(self.listOfFrames):
