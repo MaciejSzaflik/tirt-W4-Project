@@ -167,7 +167,7 @@ class GUI(threading.Thread):
         print "stopped"
         self.root.destroy()
 
-    def SIm(self, key, data_body):
+    def SIm(self, id, data_body):
         try:
             im = Image.open(StringIO(data_body))
             try:
@@ -231,11 +231,11 @@ class GuiService(Service):
             data = dataManager_input.read()
             packetData = decode(data)
             if not packetData == None:
-                if packetData['data']['type'] == 'key':
-                    #key is in packetData['data']['body']; more info in packetData['data']['data']
+                if packetData['data']['type'] == 'id':
+                    #id is in packetData['data']['body']; more info in packetData['data']['data']
                     pass
                 elif packetData['data']['type'] == 'packet':
-                    self.gui.SIm(packetData['data']['key'], packetData['body'])
+                    self.gui.SIm(packetData['data']['id'], packetData['body'])
 
 if __name__=="__main__":
     sc = ServiceController(GuiService, "gui_service.json")
