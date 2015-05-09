@@ -177,11 +177,12 @@ class GUI(threading.Thread):
         
         miniatura['thumbnail'] = Tk.Label(self.labelminiatury)
         miniatura['thumbnail'].place(x=10, y=self.ileMiniatur*180+10, width=160, height=120)
+        miniatura['thumbnail'].bind("<Button-1>", self.clickThumbnail)
 
-        miniatura['source'] = Label(self.labelminiatury, text='Z:\t' + str(streamData['source']), bg=self.kolor3)
+        miniatura['source'] = Label(self.labelminiatury, text='Z:  ' + str(streamData['source']), bg=self.kolor3)
         miniatura['source'].place(x=10, y=self.ileMiniatur*180+130)
 
-        miniatura['destination'] = Label(self.labelminiatury, text='Do:\t' + str(streamData['target']), bg=self.kolor3)
+        miniatura['destination'] = Label(self.labelminiatury, text='Do: ' + str(streamData['target']), bg=self.kolor3)
         miniatura['destination'].place(x=10, y=self.ileMiniatur*180+150)
         
         miniatura['yposition'] = self.ileMiniatur*180
@@ -190,6 +191,13 @@ class GUI(threading.Thread):
         
         self.miniatury.append(miniatura)
         self.ileMiniatur = self.ileMiniatur+1
+
+    def clickThumbnail(self,event):
+        widget = event.widget
+        miniatura = (item for item in self.miniatury if item['thumbnail'] == widget).next()
+        self.bigId = miniatura['id']
+        print "bigId:" + str(self.bigId)
+        
 
     def hide(self):
         self.root.withdraw()
@@ -201,17 +209,20 @@ class GUI(threading.Thread):
     def SIm(self, id, data_body, body_type):
         if body_type == 'http':
             try:
-                im.load()
-            except IOError:
-                pass
+                im = Image.open(StringIO(data_body))
+
+                try:
+                    im.load()
+                except IOError:
+                    pass
                 
-            if id == self.bigId:
-                self.updateBigImage(im)
-                
-            self.updateThumbnail(id, im)
-            
-        except Exception, e:
-            "not able to set " + e.message
+                if id == self.bigId:
+                    self.updateBigImage(im)
+                    
+                self.updateThumbnail(id, im)
+
+            except Exception, e:
+                "not able to set " + e.message
 
     def updateBigImage(self, image):
         temp=image.resize((620, 480), Image.ANTIALIAS)
