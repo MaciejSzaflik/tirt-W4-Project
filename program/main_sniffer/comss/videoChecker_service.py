@@ -74,12 +74,6 @@ class VideoCheckerService(Service):
                             videoCheckerOutput.send(dataToSend)
                         elif self.checkJPG(imgarray[37:]):
                             packetData['data']['body_type'] = 'http'
-                            try:
-                                f = open('videoChecker.jpg', 'w')
-                                f.write(imgarray[37:])
-                                f.close()
-                            except IOError, e:
-                                print e.message
                             #print "2"
                             dataToSend = encode(packetData['data'], imgarray[37:])
                             #print "VIDEOCHKR output data size: " + str(len(dataToSend))
