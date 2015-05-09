@@ -133,8 +133,18 @@ class GUI(threading.Thread):
 
 
         #czesc z miniaturami i ich danymi
-        self.labelminiatury = LabelFrame(self.root,bg=self.kolor3)
+        self.labelminiatury = Canvas(self.root,bg=self.kolor3)
+        
+        vbar=Scrollbar(self.root, orient=VERTICAL)
+        
+        vbar.config(command=self.labelminiatury.yview)
+        vbar.place(x=390, width=20, height=768)
+        
+        self.labelminiatury.config(yscrollcommand=vbar.set)
         self.labelminiatury.place(x=210,width = 180, height = 768)
+        
+        self.labelminiatury.configure(scrollregion=(0,0,180,3000))
+        self.labelminiatury.create_line(10, 10, 160, 10)
 
         # tu w jakis sposob bedzie trzeba dynamicnzie powielic te elementy to jest tylko dla przykladu
 
@@ -153,7 +163,7 @@ class GUI(threading.Thread):
 
         #okno podgladu (te duze)
         labelpodglad = LabelFrame(self.root,bg=self.kolor3)
-        labelpodglad.place(x=390,width = 634, height = 768)
+        labelpodglad.place(x=410,width = 634, height = 768)
 
         #tutaj nie wiem jak ogrnac tego strema aby byl wrzucam tylko labela zeby bylo wiadomo w ktorym miejscu
         self.panel = Tk.Label(labelpodglad)
@@ -175,15 +185,15 @@ class GUI(threading.Thread):
         
         miniatura['id'] = streamData['id']
         
-        miniatura['thumbnail'] = Tk.Label(self.labelminiatury)
-        miniatura['thumbnail'].place(x=10, y=self.ileMiniatur*180+10, width=160, height=120)
+        miniatura['thumbnail'] = Label(self.labelminiatury)
+        self.labelminiatury.create_window(10, self.ileMiniatur*180+10, width=160, height=120, window=miniatura['thumbnail'], anchor=NW)
         miniatura['thumbnail'].bind("<Button-1>", self.clickThumbnail)
 
-        miniatura['source'] = Label(self.labelminiatury, text='Z:  ' + str(streamData['source']), bg=self.kolor3)
-        miniatura['source'].place(x=10, y=self.ileMiniatur*180+130)
+        miniatura['source'] = Label(self.labelminiatury, text='Z:   ' + str(streamData['source']), bg=self.kolor3)
+        self.labelminiatury.create_window(10, self.ileMiniatur*180+130, window=miniatura['source'], anchor=NW)
 
         miniatura['destination'] = Label(self.labelminiatury, text='Do: ' + str(streamData['target']), bg=self.kolor3)
-        miniatura['destination'].place(x=10, y=self.ileMiniatur*180+150)
+        self.labelminiatury.create_window(10, self.ileMiniatur*180+150, window=miniatura['destination'], anchor=NW)
         
         miniatura['yposition'] = self.ileMiniatur*180
         
