@@ -3,6 +3,7 @@
 
 from ComssServiceDevelopment.connectors.tcp.msg_stream_connector import InputMessageConnector, OutputMessageConnector
 from ComssServiceDevelopment.service import Service, ServiceController
+from ComssServiceDevelopment.development import DevServiceController #import modułu klasy testowego kontrolera usługi
 
 from struct import *
 import threading
@@ -38,6 +39,23 @@ class GUI(threading.Thread):
     kolor1='#777777'
     kolor2='#555555'
     kolor3='#aaaaaa'
+    
+    dataManagerController = DevServiceController("dataManager_service.json")
+    
+    wybor1 = 1
+    wybor2 = 0
+    wybor3 = 0
+    wybor4 = 0
+    
+    source_addres_start = "127.0.0.1"
+    source_addres_end = "127.0.0.1"
+    source_port_start = 6000
+    source_port_end = 7999
+    target_addres_start = "127.0.0.1"
+    target_addres_end = "127.0.0.1"
+    target_port_start = 1000
+    target_port_end = 80000
+    
 
     def __init__(self):
         threading.Thread.__init__(self)
@@ -60,77 +78,101 @@ class GUI(threading.Thread):
         #poczatek zakresu ip
         label1=Label(labelfiltracja, text='Poczatek zrodlowych aresow IP:',bg=self.kolor3)
         label1.place(x=5,y=20)
-        entry1=Entry(labelfiltracja)
+        self.source_addres_start = StringVar()
+        self.source_addres_start.set('127.0.0.1')
+        entry1=Entry(labelfiltracja, textvariable=self.source_addres_start)
         entry1.place(x=5,y=50)
+        entry1.get()
 
         #koniec zakresu ip
         label2=Label(labelfiltracja, text='Koniec zrodlowych aresow IP:',bg=self.kolor3)
         label2.place(x=5,y=80)
-        entry2=Entry(labelfiltracja)
+        self.source_addres_end = StringVar()
+        self.source_addres_end.set('127.0.0.1')
+        entry2=Entry(labelfiltracja, textvariable=self.source_addres_end)
         entry2.place(x=5,y=110)
+        entry2.get()
 
         #poczatek zakresu portow
         label3=Label(labelfiltracja, text='Poczatek zrodlowych portow:',bg=self.kolor3)
         label3.place(x=5,y=140)
-        entry3=Entry(labelfiltracja)
+        self.source_port_start = StringVar()
+        self.source_port_start.set('6000')
+        entry3=Entry(labelfiltracja, textvariable=self.source_port_start)
         entry3.place(x=5,y=170)
+        entry3.get()
 
         #koniec zakresu portow
         label4=Label(labelfiltracja, text='Koniec zrodlowych portow:',bg=self.kolor3)
         label4.place(x=5,y=200)
-        entry4=Entry(labelfiltracja)
+        self.source_port_end = StringVar()
+        self.source_port_end.set('7999')
+        entry4=Entry(labelfiltracja, textvariable=self.source_port_end)
         entry4.place(x=5,y=230)
+        entry4.get()
 
         label5=Label(labelfiltracja, text='Poczatek docelowych aresow IP:',bg=self.kolor3)
         label5.place(x=5,y=260)
-        entry5=Entry(labelfiltracja)
+        self.target_addres_start = StringVar()
+        self.target_addres_start.set('127.0.0.1')
+        entry5=Entry(labelfiltracja, textvariable=self.target_addres_start)
         entry5.place(x=5,y=290)
+        entry5.get()
 
         #koniec zakresu ip
         label6=Label(labelfiltracja, text='Koniec docelowych aresow IP:',bg=self.kolor3)
         label6.place(x=5,y=320)
-        entry6=Entry(labelfiltracja)
+        self.target_addres_end = StringVar()
+        self.target_addres_end.set('127.0.0.1')
+        entry6=Entry(labelfiltracja, textvariable=self.target_addres_end)
         entry6.place(x=5,y=350)
+        entry6.get()
 
         #poczatek zakresu portow
         label7=Label(labelfiltracja, text='Poczatek docelowych portow:',bg=self.kolor3)
         label7.place(x=5,y=380)
-        entry7=Entry(labelfiltracja)
+        self.target_port_start = StringVar()
+        self.target_port_start.set('1000')
+        entry7=Entry(labelfiltracja, text=self.target_port_start)
         entry7.place(x=5,y=410)
+        entry7.get()
 
         #koniec zakresu portow
         label8=Label(labelfiltracja, text='Koniec docelowych portow:',bg=self.kolor3)
         label8.place(x=5,y=440)
-        entry8=Entry(labelfiltracja)
+        self.target_port_end = StringVar()
+        self.target_port_end.set('80000')
+        entry8=Entry(labelfiltracja, textvariable=self.target_port_end)
         entry8.place(x=5,y=470)
+        entry8.get()
 
         #wybor protokolow
 
-        wybor1=IntVar()
-        wybor2=IntVar()
-        wybor3=IntVar()
-        wybor4=IntVar()
+        self.wybor1=IntVar()
+        self.wybor1.set(1)
+        self.wybor2=IntVar()
+        self.wybor2.set(0)
+        self.wybor3=IntVar()
+        self.wybor3.set(0)
+        self.wybor4=IntVar()
+        self.wybor4.set(0)
 
-        check1=Checkbutton(labelfiltracja, text='HTTP', variable=wybor1, onvalue=1, offvalue=0, bg=self.kolor3)
+        check1=Checkbutton(labelfiltracja, text='HTTP', variable=self.wybor1, onvalue=1, offvalue=0, bg=self.kolor3)
         check1.place(x=5, y=500)
 
-        check2=Checkbutton(labelfiltracja, text='protokol2', variable=wybor2, onvalue=1, offvalue=0, bg=self.kolor3)
+        check2=Checkbutton(labelfiltracja, text='protokol2', variable=self.wybor2, onvalue=1, offvalue=0, bg=self.kolor3)
         check2.place(x=5, y=530)
 
 
-        check3=Checkbutton(labelfiltracja, text='protokol3', variable=wybor3, onvalue=1, offvalue=0, bg=self.kolor3)
+        check3=Checkbutton(labelfiltracja, text='protokol3', variable=self.wybor3, onvalue=1, offvalue=0, bg=self.kolor3)
         check3.place(x=5, y=560)
 
-        check4=Checkbutton(labelfiltracja, text='protokol4', variable=wybor4, onvalue=1, offvalue=0, bg=self.kolor3)
+        check4=Checkbutton(labelfiltracja, text='protokol4', variable=self.wybor4, onvalue=1, offvalue=0, bg=self.kolor3)
         check4.place(x=5, y=590)
 
 
-        buttonfiltruj=Button(labelfiltracja, text='Filtruj')
+        buttonfiltruj=Button(labelfiltracja, text='Filtruj', command=self.updateFilters)
         buttonfiltruj.place(x=65, y=700)
-        
-        buttonAddThumb = Button(labelfiltracja, text='DodajMiniature', command=self.addThumbnail)
-        buttonAddThumb.place(x=65, y=740)
-
 
         #czesc z miniaturami i ich danymi
         self.labelminiatury = Canvas(self.root,bg=self.kolor3)
@@ -160,7 +202,6 @@ class GUI(threading.Thread):
         #opis2=Label(labelminiatury, text='Port:',bg=self.kolor3)
         #opis2.place(x=10,y=220)
 
-
         #okno podgladu (te duze)
         labelpodglad = LabelFrame(self.root,bg=self.kolor3)
         labelpodglad.place(x=410,width = 634, height = 768)
@@ -179,6 +220,17 @@ class GUI(threading.Thread):
         label11.place(x=10,y=720)
 
         self.root.mainloop()
+        
+    def updateFilters(self):
+        self.dataManagerController.update_params({"source_port_start": self.source_port_start.get()})
+        self.dataManagerController.update_params({"source_port_end": self.source_port_end.get()})
+        self.dataManagerController.update_params({"target_port_start": self.target_port_start.get()})
+        self.dataManagerController.update_params({"target_port_end": self.target_port_end.get()})
+        self.dataManagerController.update_params({"source_addres_start": self.source_addres_start.get()})
+        self.dataManagerController.update_params({"source_addres_end": self.source_addres_end.get()})
+        self.dataManagerController.update_params({"target_addres_start": self.target_addres_start.get()})
+        self.dataManagerController.update_params({"target_addres_end": self.target_addres_end.get()})
+        self.dataManagerController.update_params({"http": True if self.wybor1.get() == 1 else False})
         
     def addThumbnail(self, streamData):
         miniatura = {}

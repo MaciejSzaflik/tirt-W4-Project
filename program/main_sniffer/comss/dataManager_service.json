@@ -15,6 +15,19 @@
       "ip": "127.0.0.1",
       "port": 10079
     }
+  },
+
+
+  "parameters": {
+    "source_port_start": "6000",
+    "source_port_end": "7999",
+    "target_port_start": "1000",
+    "target_port_end": "80000",
+    "source_addres_start": "127.0.0.1",
+    "source_addres_end": "127.0.0.1",
+    "target_addres_start": "127.0.0.1",
+    "target_addres_end": "127.0.0.1",
+    "http": true
   }
 }
 
