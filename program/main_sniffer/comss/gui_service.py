@@ -34,19 +34,23 @@ class GUI(threading.Thread):
     miniatury = []
     ileMiniatur = 0
     bigId = 0
-    
+
     labelminiatury = 0
+    labelZ = 0
+    labelZVal = 0
+    labelDo = 0
+    labelDoVal = 0
     kolor1='#777777'
     kolor2='#555555'
     kolor3='#aaaaaa'
-    
+
     dataManagerController = DevServiceController("dataManager_service.json")
-    
+
     wybor1 = 1
     wybor2 = 0
     wybor3 = 0
     wybor4 = 0
-    
+
     source_addres_start = "127.0.0.1"
     source_addres_end = "127.0.0.1"
     source_port_start = 6000
@@ -55,7 +59,7 @@ class GUI(threading.Thread):
     target_addres_end = "127.0.0.1"
     target_port_start = 1000
     target_port_end = 80000
-    
+
 
     def __init__(self):
         threading.Thread.__init__(self)
@@ -66,17 +70,17 @@ class GUI(threading.Thread):
         self.root.protocol('WM_DELETE_WINDOW', self._stop_program)
         self.root.geometry("1024x768")
         self.root.resizable(width=FALSE, height=FALSE)
-        
+
         self.root.title("Main frame")
-        self.frame = Tk.Frame(self.root)
-        self.frame.pack()
+        #self.frame = Tk.Frame(self.root)
+       # self.frame.pack()
 
         #ramka zawierajaca opcje filtracji
         labelfiltracja = LabelFrame(self.root,bg=self.kolor3)
         labelfiltracja.place(width = 210, height = 768)
 
         #poczatek zakresu ip
-        label1=Label(labelfiltracja, text='Poczatek zrodlowych aresow IP:',bg=self.kolor3)
+        label1=Label(labelfiltracja, text='Poczatek zrodlowych aresow IP:',bg=self.kolor3, wraplength=160)
         label1.place(x=5,y=20)
         self.source_addres_start = StringVar()
         self.source_addres_start.set('127.0.0.1')
@@ -176,17 +180,17 @@ class GUI(threading.Thread):
 
         #czesc z miniaturami i ich danymi
         self.labelminiatury = Canvas(self.root,bg=self.kolor3)
-        
+
         vbar=Scrollbar(self.root, orient=VERTICAL)
-        
+
         vbar.config(command=self.labelminiatury.yview)
-        vbar.place(x=390, width=20, height=768)
-        
+        vbar.place(x=370, width=20, height=768)
+
         self.labelminiatury.config(yscrollcommand=vbar.set)
-        self.labelminiatury.place(x=210,width = 180, height = 768)
-        
+        self.labelminiatury.place(x=210, y=1, width = 180, height = 768)
+
         self.labelminiatury.configure(scrollregion=(0,0,180,3000))
-        self.labelminiatury.create_line(10, 10, 160, 10)
+        #self.labelminiatury.create_line(10, 10, 160, 10)
 
         # tu w jakis sposob bedzie trzeba dynamicnzie powielic te elementy to jest tylko dla przykladu
 
@@ -204,23 +208,25 @@ class GUI(threading.Thread):
 
         #okno podgladu (te duze)
         labelpodglad = LabelFrame(self.root,bg=self.kolor3)
-        labelpodglad.place(x=410,width = 634, height = 768)
+        labelpodglad.place(x=390,width = 634, height = 768)
 
         #tutaj nie wiem jak ogrnac tego strema aby byl wrzucam tylko labela zeby bylo wiadomo w ktorym miejscu
         self.panel = Tk.Label(labelpodglad)
         self.panel.place(x=5, y=10, width=620, height=480)
 
-        label9=Label(labelpodglad, text='Adres zrodlowy:',bg=self.kolor3)
-        label9.place(x=10,y=660)
+	self.labelZVal = StringVar()
+	self.labelZVal.set("Z: ")
+        self.labelZ=Label(labelpodglad, textvariable=self.labelZVal, bg=self.kolor3)
+        self.labelZ.place(x=10,y=660)
 
-        label10=Label(labelpodglad, text='Adres doecelowy:',bg=self.kolor3)
-        label10.place(x=10,y=690)
+	self.labelDoVal = StringVar()
+	self.labelDoVal.set("Do: ")
+        self.labelDo=Label(labelpodglad, textvariable=self.labelDoVal, bg=self.kolor3)
+        self.labelDo.place(x=10,y=690)
 
-        label11=Label(labelpodglad, text='Port:',bg=self.kolor3)
-        label11.place(x=10,y=720)
-
+	
         self.root.mainloop()
-        
+
     def updateFilters(self):
         self.dataManagerController.update_params({"source_port_start": self.source_port_start.get()})
         self.dataManagerController.update_params({"source_port_end": self.source_port_end.get()})
@@ -231,12 +237,12 @@ class GUI(threading.Thread):
         self.dataManagerController.update_params({"target_addres_start": self.target_addres_start.get()})
         self.dataManagerController.update_params({"target_addres_end": self.target_addres_end.get()})
         self.dataManagerController.update_params({"http": True if self.wybor1.get() == 1 else False})
-        
+
     def addThumbnail(self, streamData):
         miniatura = {}
-        
+
         miniatura['id'] = streamData['id']
-        
+
         miniatura['thumbnail'] = Label(self.labelminiatury)
         self.labelminiatury.create_window(10, self.ileMiniatur*180+10, width=160, height=120, window=miniatura['thumbnail'], anchor=NW)
         miniatura['thumbnail'].bind("<Button-1>", self.clickThumbnail)
@@ -246,11 +252,11 @@ class GUI(threading.Thread):
 
         miniatura['destination'] = Label(self.labelminiatury, text='Do: ' + str(streamData['target']), bg=self.kolor3)
         self.labelminiatury.create_window(10, self.ileMiniatur*180+150, window=miniatura['destination'], anchor=NW)
-        
+
         miniatura['yposition'] = self.ileMiniatur*180
-        
+
         #miniatura.pack()
-        
+
         self.miniatury.append(miniatura)
         self.ileMiniatur = self.ileMiniatur+1
 
@@ -259,7 +265,7 @@ class GUI(threading.Thread):
         miniatura = (item for item in self.miniatury if item['thumbnail'] == widget).next()
         self.bigId = miniatura['id']
         print "bigId:" + str(self.bigId)
-        
+
 
     def hide(self):
         self.root.withdraw()
@@ -277,16 +283,20 @@ class GUI(threading.Thread):
                     im.load()
                 except IOError:
                     pass
-                
+		self.updateThumbnail(id, im)
                 if id == self.bigId:
-                    self.updateBigImage(im)
-                    
-                self.updateThumbnail(id, im)
+                    self.updateBigImage(id, im)
+
+                #self.updateThumbnail(id, im)
 
             except Exception, e:
                 "not able to set " + e.message
 
-    def updateBigImage(self, image):
+    def updateBigImage(self, id, image):
+        miniatura = (item for item in self.miniatury if item["id"] == id).next()
+	self.labelZVal.set(miniatura['source'].cget("text"))
+	#self.labelZ.set(zVal)
+	self.labelDoVal.set(miniatura['destination'].cget("text"))
         temp=image.resize((620, 480), Image.ANTIALIAS)
         img2 = ImageTk.PhotoImage(temp)
         self.panel.configure(image = img2)
@@ -312,16 +322,16 @@ class GUI(threading.Thread):
     def show(self):
         self.root.update()
         self.root.deiconify()
-        
+
     def addStream(self, packetData):
         streamData = {}
         streamData['id'] = packetData['body']
         streamData['source'] = str(packetData['data']['data']['source']['address']) + ":" + str(packetData['data']['data']['source']['port'])
         streamData['target'] = str(packetData['data']['data']['target']['address']) + ":" + str(packetData['data']['data']['target']['port'])
         self.streams.append(streamData)
-        
+
         self.addThumbnail(streamData)
-        
+
         self.bigId = streamData['id']
         print "added stream:" + str(streamData)
 
@@ -342,7 +352,7 @@ class GuiService(Service):
 
     def declare_inputs(self):
         self.declare_input("dataManagerStreamInput", InputMessageConnector(self))
-        
+
     def declare_outputs(self):	#deklaracja wyjść
         self.declare_output("guiOutput", OutputMessageConnector(self))
 
@@ -353,14 +363,14 @@ class GuiService(Service):
         while self.running == 1:
             data = dataManager_input.read()
             packetData = decode(data)
-            
+
             if not packetData == None:
-            
+
                 if packetData['data']['type'] == 'id':
                     #id is in packetData['body']; more info in packetData['data']['data']
                     self.gui.addStream(packetData)
                     pass
-                    
+
                 elif packetData['data']['type'] == 'packet':
                     self.gui.SIm(packetData['data']['id'], packetData['body'], packetData['data']['body_type'])
 
