@@ -80,17 +80,17 @@ class dataManager(object):
             self.resetCheck()
 
     def resetCheck(self):
-        print "reset check"
+       # print "reset check"
         for id in self.storage:
             self.storage[id] = False
-        print self.storage
+       # print self.storage
         
     def between(self, value, name, typ):
         if typ == 'port':
-            print "between port value " + str(value) + " | filterOptions: " + str(self.filterOptions.get(name + '_start', 0)) + " - " + str(self.filterOptions.get(name + '_end', 10000000))
+        #    print "between port value " + str(value) + " | filterOptions: " + str(self.filterOptions.get(name + '_start', 0)) + " - " + str(self.filterOptions.get(name + '_end', 10000000))
             return (value >= self.filterOptions.get(name + '_start', 0)) and (value <= self.filterOptions.get(name + '_end', 10000000))
         elif typ == 'ip':
-            print "between ip value " + str(value) + " | filterOptions: " + str(IPv4Address(self.filterOptions.get(name + '_start'))) + " - " +  str(IPv4Address(self.filterOptions.get(name + '_end')))
+      #      print "between ip value " + str(value) + " | filterOptions: " + str(IPv4Address(self.filterOptions.get(name + '_start'))) + " - " +  str(IPv4Address(self.filterOptions.get(name + '_end')))
             return (IPv4Address(value) >= IPv4Address(self.filterOptions.get(name + '_start'))) and (IPv4Address(value) <= IPv4Address(self.filterOptions.get(name + '_end')))
         else:
             return False
@@ -99,7 +99,7 @@ class dataManager(object):
         return self.filterOptions.get(packetData.get(name, None))
 
     def checkInFilter(self, packetData):
-        print "!!! " + str(packetData)
+       # print "!!! " + str(packetData)
         return ( self.between(packetData['source']['port'], 'source_port', 'port')  and
           self.between(packetData['target']['port'], 'target_port', 'port') and
           self.between(packetData['source']['address'], 'source_addres', 'ip') and
@@ -131,25 +131,26 @@ class dataManager(object):
     def receiveData(self, packetData, parsedVideoPacket_data, dataManager_stream_output):
         # if such stream exist
         if self.checkLocally(packetData):
-            print "stream exist"
+          #  print "stream exist"
             packet_id = self.createId(packetData)
             
             if self.storage[packet_id] == False: # if not checked
-                print "existing stream not checked"
+             #   print "existing stream not checked"
                 if not self.checkInFilter(packetData):
-                    print "existing check FAILED"
+             #       print "existing check FAILED"
+		     pass
                 else:
                     self.storage[packet_id] = True
 
             else: # check ok
-                print "existing stream check ok"
+             #   print "existing stream check ok"
                 self.notifyGUI(packetData, parsedVideoPacket_data, dataManager_stream_output)
                 #self.storage[packet_id] = True
 
         else: # new stream
-            print "new stream"
+           # print "new stream"
             if self.checkInFilter(packetData):
-                print "new stream check ok"
+           #     print "new stream check ok"
                 self.saveNewPacket(packetData, dataManager_stream_output)
                 self.notifyGUI(packetData, parsedVideoPacket_data, dataManager_stream_output)
 
@@ -201,11 +202,11 @@ class DataManagerService(Service):
                     if not packetData == None:
                         self.manager.receiveData(packetData['data'], packetData['body'], dataManager_stream_output)
                 except Exception, e:
-                    print "some error " + e.message
+                #    print "some error " + e.message
                     pass
                 
             except EOFError:
-                print "EOFError"
+              #  print "EOFError"
                 pass
 
 if __name__=="__main__":

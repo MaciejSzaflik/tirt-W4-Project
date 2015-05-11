@@ -34,6 +34,7 @@ class GUI(threading.Thread):
     miniatury = []
     ileMiniatur = 0
     bigId = 0
+    miniaturaID = 0
 
     labelminiatury = 0
     labelZ = 0
@@ -68,7 +69,7 @@ class GUI(threading.Thread):
     def run(self):
         self.root = Tk.Tk()
         self.root.protocol('WM_DELETE_WINDOW', self._stop_program)
-        self.root.geometry("1024x768")
+        self.root.geometry("1044x768")
         self.root.resizable(width=FALSE, height=FALSE)
 
         self.root.title("Main frame")
@@ -174,6 +175,8 @@ class GUI(threading.Thread):
         check4=Checkbutton(labelfiltracja, text='protokol4', variable=self.wybor4, onvalue=1, offvalue=0, bg=self.kolor3)
         check4.place(x=5, y=590)
 
+	buttonusun=Button(labelfiltracja, text='Usun', command=self.removeStream)
+        buttonusun.place(x=65, y=670)
 
         buttonfiltruj=Button(labelfiltracja, text='Filtruj', command=self.updateFilters)
         buttonfiltruj.place(x=65, y=700)
@@ -184,7 +187,7 @@ class GUI(threading.Thread):
         vbar=Scrollbar(self.root, orient=VERTICAL)
 
         vbar.config(command=self.labelminiatury.yview)
-        vbar.place(x=370, width=20, height=768)
+        vbar.place(x=390, width=20, height=768)
 
         self.labelminiatury.config(yscrollcommand=vbar.set)
         self.labelminiatury.place(x=210, y=1, width = 180, height = 768)
@@ -208,7 +211,7 @@ class GUI(threading.Thread):
 
         #okno podgladu (te duze)
         labelpodglad = LabelFrame(self.root,bg=self.kolor3)
-        labelpodglad.place(x=390,width = 634, height = 768)
+        labelpodglad.place(x=410,width = 634, height = 768)
 
         #tutaj nie wiem jak ogrnac tego strema aby byl wrzucam tylko labela zeby bylo wiadomo w ktorym miejscu
         self.panel = Tk.Label(labelpodglad)
@@ -264,6 +267,7 @@ class GUI(threading.Thread):
         widget = event.widget
         miniatura = (item for item in self.miniatury if item['thumbnail'] == widget).next()
         self.bigId = miniatura['id']
+	self.miniaturaID = miniatura['id']
         print "bigId:" + str(self.bigId)
 
 
@@ -323,6 +327,52 @@ class GUI(threading.Thread):
         self.root.update()
         self.root.deiconify()
 
+    def removeStream(self):
+	print self.miniaturaID
+	if not self.miniaturaID==0:
+		miniatura = (item for item in self.miniatury if item["id"] == self.miniaturaID).next()
+		print 'usuwanie'	
+		#self.labelminiatury.destroy(miniatura['thumbnail'])
+		miniatura['thumbnail'].destroy()
+        	miniatura['source'].destroy() 
+       		miniatura['destination'].destroy()
+		porownanie=miniatura['yposition']
+		#porownanie=porownanie/180
+		
+		print porownanie
+       		self.ileMiniatur = self.ileMiniatur-1
+		for i in self.miniatury:
+			print i['id']
+			print i['id'].index(i['id'])
+			if i['yposition'] > porownanie:
+				print i['yposition']
+				nowyY=(0*180)-170
+				miniatura['thumbnail'].configure(y=nowyY)
+       				miniatura['thumbnail'].y = nowyY
+			
+			
+	#def addThumbnail(self, streamData):
+       # miniatura = {}
+##
+      #  miniatura['id'] = streamData['id']
+#
+ #       miniatura['thumbnail'] = Label(self.labelminiatury)
+  #      self.labelminiatury.create_window(10, self.ileMiniatur*180+10, width=160, height=120, window=miniatura['thumbnail'], anchor=NW)
+   #     miniatura['thumbnail'].bind("<Button-1>", self.clickThumbnail)
+#
+ #       miniatura['source'] = Label(self.labelminiatury, text='Z:   ' + str(streamData['source']), bg=self.kolor3)
+  #      self.labelminiatury.create_window(10, self.ileMiniatur*180+130, window=miniatura['source'], anchor=NW)
+#
+ #       miniatura['destination'] = Label(self.labelminiatury, text='Do: ' + str(streamData['target']), bg=self.kolor3)
+  #      self.labelminiatury.create_window(10, self.ileMiniatur*180+150, window=miniatura['destination'], anchor=NW)
+#
+ ##       miniatura['yposition'] = self.ileMiniatur*180
+
+        #miniatura.pack()
+
+   #     self.miniatury.append(miniatura)
+    #    self.ileMiniatur = self.ileMiniatur+1
+
     def addStream(self, packetData):
         streamData = {}
         streamData['id'] = packetData['body']
@@ -373,6 +423,7 @@ class GuiService(Service):
 
                 elif packetData['data']['type'] == 'packet':
                     self.gui.SIm(packetData['data']['id'], packetData['body'], packetData['data']['body_type'])
+		
 
 if __name__=="__main__":
     sc = ServiceController(GuiService, "gui_service.json")
