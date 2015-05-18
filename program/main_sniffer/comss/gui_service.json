@@ -1,15 +1,15 @@
 {
-  "parametersHost": "localhost:10074",
+  "parametersHost": "localhost:20074",
   "inputs": {
     "dataManagerStreamInput": {
       "ip": "127.0.0.1",
-      "port": 10079
+      "port": 20078
     }
   },
   "outputs": {
     "guiOutput": {
       "ip": "127.0.0.1",
-      "port": 10080
+      "port": 20077
     }
   }
 }

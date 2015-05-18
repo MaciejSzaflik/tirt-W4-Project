@@ -20,7 +20,7 @@ class VideoCheckerService(Service):
     running = 1
 
     def declare_inputs(self):
-        self.declare_input("wireInput", InputMessageConnector(self))
+        self.declare_input("dataManagerInput", InputMessageConnector(self))
         
     def declare_outputs(self):
         self.declare_output("videoCheckerOutput", OutputMessageConnector(self))
@@ -53,14 +53,15 @@ class VideoCheckerService(Service):
     
         print "VideoChecker service started!"
         
-        wire_input = self.get_input("wireInput")
+        dataManager_input = self.get_input("dataManagerInput")
         videoCheckerOutput = self.get_output("videoCheckerOutput")
 
         while self.running == 1:   #pętla główna
             try:
-                data = wire_input.read() #obiekt interfejsu
+                data = dataManager_input.read() #obiekt interfejsu
 
                 try:
+                    #print "received " + str(len(data))
                     packetData = decode(data)
                     #print "VIDEOCHKR packetData size: " + str(len(data))
                     if not packetData == None:
@@ -68,20 +69,22 @@ class VideoCheckerService(Service):
 
                         if self.checkJPG(imgarray):
                             packetData['data']['body_type'] = 'http'
+                            packetData['data']['offset'] = 0
                             #print "1"
-                            dataToSend = encode(packetData, imgarray)
+                            dataToSend = encode(packetData['data'], '')
                             #print "VIDEOCHKR output data size: " + str(len(dataToSend))
                             videoCheckerOutput.send(dataToSend)
                         elif self.checkJPG(imgarray[37:]):
                             packetData['data']['body_type'] = 'http'
+                            packetData['data']['offset'] = 37
                             #print "2"
-                            dataToSend = encode(packetData['data'], imgarray[37:])
+                            dataToSend = encode(packetData['data'], '')
                             #print "VIDEOCHKR output data size: " + str(len(dataToSend))
                             videoCheckerOutput.send(dataToSend)
                         elif self.anotherCheck(imgarray):
-                            packetData['data']['body_type'] = 'never accessed here'
+                            packetData['data']['body_type'] = False
                             #print "3"
-                            dataToSend = encode(packetData, imgarray)
+                            dataToSend = encode(packetData['data'], '')
                             #print "VIDEOCHKR output data size: " + str(len(dataToSend))
                             videoCheckerOutput.send(dataToSend)
 

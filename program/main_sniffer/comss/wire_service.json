@@ -1,10 +1,10 @@
 {
-  "parametersHost": "localhost:10071",
+  "parametersHost": "localhost:20071",
   "inputs": {},
   "outputs": {
     "wireOutput": {
       "ip": "127.0.0.1",
-      "port": 10075
+      "port": 20075
     }
   }
 }

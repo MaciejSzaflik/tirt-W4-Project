@@ -1,15 +1,15 @@
 {
-  "parametersHost": "localhost:10072",
+  "parametersHost": "localhost:20072",
   "inputs": {
-    "wireInput": {
+    "dataManagerInput": {
       "ip": "127.0.0.1",
-      "port": 10075
+      "port": 20079
     }
   },
   "outputs": {
     "videoCheckerOutput": {
       "ip": "127.0.0.1",
-      "port": 10076
+      "port": 20076
     }
   }
 }

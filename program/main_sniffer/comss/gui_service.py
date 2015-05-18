@@ -412,6 +412,7 @@ class GuiService(Service):
         print "Gui service started."
         while self.running == 1:
             data = dataManager_input.read()
+            #print "received from data manager " + str(len(data))
             packetData = decode(data)
 
             if not packetData == None:
@@ -422,8 +423,8 @@ class GuiService(Service):
                     pass
 
                 elif packetData['data']['type'] == 'packet':
+                    #print "notified:" + str(packetData['data'])
                     self.gui.SIm(packetData['data']['id'], packetData['body'], packetData['data']['body_type'])
-		
 
 if __name__=="__main__":
     sc = ServiceController(GuiService, "gui_service.json")

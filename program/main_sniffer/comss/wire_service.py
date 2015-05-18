@@ -43,18 +43,17 @@ class WireService(Service):
             print("pff")
     
     def readPacketFromSocket(self):
-        packet = self.mainSocket.recvfrom(65535)
+        packet = self.mainSocket.recvfrom(65535 * 32)
         packetData = self.decipherWhatIsInside(packet)
-        if packetData and packetData['data'] and (packetData['data']['source']['port'] < 10070 or packetData['data']['source']['port'] > 10081) and (packetData['data']['target']['port'] < 10070 or packetData['data']['target']['port'] > 10081):
+        if packetData and packetData != None and packetData['data'] and (packetData['data']['source']['port'] < 20070 or packetData['data']['source']['port'] > 20081) and (packetData['data']['target']['port'] < 20070 or packetData['data']['target']['port'] > 20081):
             #try:
             #    f = open('wire.jpg', 'w')
             #    f.write(packetData['body'][37:])
             #    f.close()
             #except IOError, e:
             #    print e.message
-            dataToSend = encode(packetData['data'], packetData['body'])
             #print "WIRE output data size: " + str(len(dataToSend))
-            self.wire_output.send(dataToSend)
+            self.wire_output.send(encode(packetData['data'], packetData['body']))
 
     def decipherWhatIsInside(self, packet):
         #parse ethernet header
@@ -62,7 +61,12 @@ class WireService(Service):
         eth_length = 14
 
         eth_header = packet[:eth_length]
-        eth = unpack('!6s6sH' , eth_header)
+        try:
+            eth = unpack('!6s6sH' , eth_header)
+        except:
+            print "errors"
+            return None
+
         eth_protocol = socket.ntohs(eth[2])
 
         #Parse IP packets, IP Protocol number = 8
