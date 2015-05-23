@@ -8,6 +8,10 @@
     "videoCheckerInput": {
       "ip": "127.0.0.1",
       "port": 20076
+    },
+    "guiInput": {
+      "ip": "127.0.0.1",
+      "port": 20077
     }
   },
   "outputs": {

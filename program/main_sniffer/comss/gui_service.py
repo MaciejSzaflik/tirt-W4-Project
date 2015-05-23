@@ -24,6 +24,34 @@ from cStringIO import StringIO
 from Coder.encode import encode
 from Coder.decode import decode
 
+def resize(width, height, data):
+    img = Image.open(StringIO(data))
+
+    try:
+        img.load()
+    except IOError:
+        pass
+
+    img = img.resize((width, height), Image.ANTIALIAS)
+
+    output = StringIO()
+    img.save(output, format='JPEG')
+
+    imageData = output.getvalue()
+    output.close()
+
+    return imageData
+
+def resizzer(data, size):
+    width = 10
+    height = 10
+    if size == 'big':
+        width = 620
+        height = 480
+    else:
+        width = 160
+        height = 120
+    return resize(width, height, data)
 
 ##############
 ## nowe GUI ##
@@ -269,6 +297,8 @@ class GUI(threading.Thread):
         self.bigId = miniatura['id']
         self.miniaturaID = miniatura['id']
         print "bigId:" + str(self.bigId)
+        self.bigOutput.send(encode({'type': 'resize'}, self.bigId))
+        
 
 
     def hide(self):
@@ -278,18 +308,25 @@ class GUI(threading.Thread):
         print "stopped"
         self.root.destroy()
 
-    def SIm(self, id, data_body, body_type):
+    def SIm(self, id, data_body, body_type, size):
         if body_type == 'http':
             try:
-                im = Image.open(StringIO(data_body))
+                im = None
+                try:
+                    im = Image.open(StringIO(resizzer(data_body, size)))
+                except Exception, e:
+                    print "err"
+                    print e.message
 
                 try:
                     im.load()
                 except IOError:
                     pass
-  	            self.updateThumbnail(id, im)
-                if id == self.bigId:
+
+                if id == self.bigId and size == 'big':
                     self.updateBigImage(id, im)
+                elif size == 'small':
+      	            self.updateThumbnail(id, im)
 
                 #self.updateThumbnail(id, im)
 
@@ -301,16 +338,16 @@ class GUI(threading.Thread):
         self.labelZVal.set(miniatura['source'].cget("text"))
         #self.labelZ.set(zVal)
         self.labelDoVal.set(miniatura['destination'].cget("text"))
-        temp=image.resize((620, 480), Image.ANTIALIAS)
-        img2 = ImageTk.PhotoImage(temp)
+        #temp=image.resize((620, 480), Image.ANTIALIAS)
+        img2 = ImageTk.PhotoImage(image)
         self.panel.configure(image = img2)
         self.panel.image = img2
 
 
     def updateThumbnail(self, id, image):
         # resize image
-        temp=image.resize((160, 120), Image.ANTIALIAS)
-        img2= ImageTk.PhotoImage(temp)
+        #temp=image.resize((160, 120), Image.ANTIALIAS)
+        img2= ImageTk.PhotoImage(image)
 
         # skala_szer=160/img2.width()
         # skala_wysok=120/img2.height()
@@ -379,7 +416,11 @@ class GUI(threading.Thread):
         self.addThumbnail(streamData)
 
         self.bigId = streamData['id']
+        self.bigOutput.send(encode({'type': 'resize'}, self.bigId))
         print "added stream:" + str(streamData)
+
+    def setBigOutput(self, output):
+        self.bigOutput = output
 
 
 class GuiService(Service):
@@ -405,6 +446,8 @@ class GuiService(Service):
     # GŁÓWNA METODA USŁUGI
     def run(self):
         dataManager_input = self.get_input("dataManagerStreamInput")
+        self.gui.setBigOutput(self.get_output("guiOutput"))
+
         print "Gui service started."
         while self.running == 1:
             data = dataManager_input.read()
@@ -425,7 +468,7 @@ class GuiService(Service):
 
                 elif packetData['data']['type'] == 'packet':
                     #print "notified:" + str(packetData['data'])
-                    self.gui.SIm(packetData['data']['id'], packetData['body'], packetData['data']['body_type'])
+                    self.gui.SIm(packetData['data']['id'], packetData['body'], packetData['data']['body_type'], packetData['data']['size'])
 
 if __name__=="__main__":
     sc = ServiceController(GuiService, "gui_service.json")

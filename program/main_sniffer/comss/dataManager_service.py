@@ -38,6 +38,8 @@ class dataManager(object):
         'http': True
     }
 
+    lastBigId = None
+
     # types in storage['state']:
     # None - nothing
     # True - is being verified in videoChecker
@@ -161,8 +163,15 @@ class dataManager(object):
         self.dataManager_gui_output.send(encode({'type': 'remove'}, id))
 
     def notifyGUI(self, id, body_type, parsedVideoPacket_data, dataManager_gui_output):
-        self.storage[id]['time'] = datetime.now()
-        dataManager_gui_output.send(encode({'type': 'packet', 'id': id, 'body_type': body_type}, parsedVideoPacket_data))
+        size = self.storage[id].get('size', 'small')
+        if size == 'small':
+            if int((datetime.now() - self.storage[id].get('time', datetime.now())).total_seconds() * 1000) > 2000:
+                dataManager_gui_output.send(encode({'type': 'packet', 'id': id, 'body_type': body_type, 'size': size}, parsedVideoPacket_data))
+                self.storage[id]['time'] = datetime.now()
+        else:
+            dataManager_gui_output.send(encode({'type': 'packet', 'id': id, 'body_type': body_type, 'size': size}, parsedVideoPacket_data))
+            self.storage[id]['time'] = datetime.now()
+
 
 
     def handleWire(self, packetData, parsedVideoPacket_data, dataManager_videoChecker_output, dataManager_gui_output):
@@ -216,6 +225,14 @@ class dataManager(object):
     # action to be added in main LOOP of comss
     def receiveVideoChecker(self, packetData, dataManager_gui_output):
         self.handleVideoChecker(packetData, dataManager_gui_output)
+
+    def setBigImage(self, id):
+        if not self.storage.get(id, None) == None:
+            if not self.lastBigId == None:
+                self.storage[self.lastBigId]['size'] = 'small'
+            self.lastBigId = id
+
+            self.storage[id]['size'] = 'big'
 
 
 class WireThread(threading.Thread):
@@ -308,6 +325,31 @@ class VideoCheckerThread(threading.Thread):
               #  print "EOFError"
                 pass
 
+class GUIThread(threading.Thread):
+    def __init__(self, service, manager):
+         super(GUIThread, self).__init__()
+         self.service = service
+         self.manager = manager
+
+    def run(self):
+        print "DataManager::guiInputThread started!"
+        gui_input = self.service.get_input("guiInput")
+
+        while self.service.running == 1:   #pętla główna
+            try:
+                data = gui_input.read() #obiekt interfejsu
+
+                try:
+                    packetData = decode(data)
+                    if not packetData == None:
+                        print "big id " + str(packetData['body'])
+                        self.manager.setBigImage(packetData['body'])
+                except Exception, e:
+                    pass
+                
+            except EOFError:
+                pass
+
 
 class DataManagerService(Service):
     running = 1
@@ -341,11 +383,15 @@ class DataManagerService(Service):
         print "DataManager service started!"
         thread1 = WireThread(self, self.manager)
         thread2 = VideoCheckerThread(self, self.manager)
+        thread3 = GUIThread(self, self.manager)
         thread1.start() # This actually causes the thread to run
         thread2.start()
+        thread3.start()
         thread1.join()  # This waits until the thread has completed
         thread2.join()
+        thread3.join()
 
 if __name__=="__main__":
     sc = ServiceController(DataManagerService, "dataManager_service.json")
     sc.start()
+
