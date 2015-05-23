@@ -294,7 +294,7 @@ class GUI(threading.Thread):
                 #self.updateThumbnail(id, im)
 
             except Exception, e:
-                "not able to set " + e.message
+                print "not able to set " + e.message
 
     def updateBigImage(self, id, image):
         miniatura = (item for item in self.miniatury if item["id"] == id).next()
@@ -417,6 +417,11 @@ class GuiService(Service):
                     #id is in packetData['body']; more info in packetData['data']['data']
                     self.gui.addStream(packetData)
                     pass
+
+                elif packetData['data']['type'] == 'remove':
+                    # id jest w body
+                    #self.gui.removeStream(packetData)
+                    print "REMOVED " + str(packetData['body'])
 
                 elif packetData['data']['type'] == 'packet':
                     #print "notified:" + str(packetData['data'])

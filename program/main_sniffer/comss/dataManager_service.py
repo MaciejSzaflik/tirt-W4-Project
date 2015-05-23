@@ -13,6 +13,8 @@ import threading
 
 import signal
 
+from datetime import datetime
+
 ##
 ## Klasa zarzadzajaca pamiecia aplikacji. Wysyla powiadomienia do GUI o nowych strumieniach i wysyla kolejne pakiety.
 ## Wymaga, aby GUI posiadalo obsluge:
@@ -35,6 +37,7 @@ class dataManager(object):
         'target_addres_end': '127.0.0.1',
         'http': True
     }
+
     # types in storage['state']:
     # None - nothing
     # True - is being verified in videoChecker
@@ -45,12 +48,18 @@ class dataManager(object):
     # False - not accepted by filter
     storage = {}
 
-    def __init__(self):
+    def __init__(self, service):
+        self.service = service
         #self.applyFilter()
+
+        self.removeOldElementsInterval()
         pass
         
     def updateFilters(self, values):
         pass
+        
+    def setDataManagerGUIOutput(self, output):
+        self.dataManager_gui_output = output
 
     def setFilterValue(self, data, value):
         newValue = data.get(value, None)
@@ -122,11 +131,37 @@ class dataManager(object):
     def createId(self, packetData):
         return packetData['source']['address'] + str(packetData['source']['port']) + packetData['target']['address'] + str(packetData['target']['port'])
 
+
+    def removeOldElementsInterval(self):
+        if self.service.running == 1:
+            threading.Timer(10.0, self.removeOldElementsInterval).start()
+            #print "interval"
+            
+            toRemove = {}
+            
+            for id in self.storage:
+                #print str(id) + ' ' + str(self.storage[id]) + ' ' + str(datetime.now())
+
+                if isinstance(self.storage[id].get('state', None), basestring):
+                    #print "TAK"
+                    prev = self.storage[id].get('time', None)
+                    now = datetime.now()
+                    if not prev == None:
+                        #print str(int((now - prev).total_seconds() * 1000)) + ' ' + str(int((now - prev).total_seconds() * 1000) > 15000)
+                        if int((now - prev).total_seconds() * 1000) > 15000:
+                            #print "REMOVE"
+                            self.GUIRemoveStream(id)
+                            toRemove[id] = True
+
+            for id in toRemove:
+                del self.storage[id]
+
     def GUIRemoveStream(self, id):
-        print "GUIRemoveStream " + id
-        #GUIRemoveStream(id)
+        #print "GUIRemoveStream " + id
+        self.dataManager_gui_output.send(encode({'type': 'remove'}, id))
 
     def notifyGUI(self, id, body_type, parsedVideoPacket_data, dataManager_gui_output):
+        self.storage[id]['time'] = datetime.now()
         dataManager_gui_output.send(encode({'type': 'packet', 'id': id, 'body_type': body_type}, parsedVideoPacket_data))
 
 
@@ -229,12 +264,12 @@ class WireThread(threading.Thread):
                 pass
 
 class VideoCheckerThread(threading.Thread):
-     def __init__(self, service, manager):
+    def __init__(self, service, manager):
          super(VideoCheckerThread, self).__init__()
          self.service = service
          self.manager = manager
 
-     def run(self):
+    def run(self):
         print "DataManager::videoCheckerInputThread started!"
         videoChecker_input = self.service.get_input("videoCheckerInput")
         dataManager_gui_output = self.service.get_output("dataManagerGUIOutput")
@@ -279,13 +314,15 @@ class DataManagerService(Service):
     
     def __init__(self):
         Service.__init__(self)
-        self.manager = dataManager()
+
+        self.manager = dataManager(self)
         self.filters_lock = threading.RLock()
-        
+
         signal.signal(signal.SIGINT,  self.stop)
         signal.signal(signal.SIGTSTP, self.stop)
 
     def stop(self):
+        print "stopped"
         self.running = 0
         sys.exit(0)
         print "stop in self"
@@ -300,6 +337,7 @@ class DataManagerService(Service):
         self.declare_output("dataManagerVideoCheckerOutput", OutputMessageConnector(self))
 
     def run(self):	#główna metoda
+        self.manager.setDataManagerGUIOutput(self.get_output("dataManagerGUIOutput"))
         print "DataManager service started!"
         thread1 = WireThread(self, self.manager)
         thread2 = VideoCheckerThread(self, self.manager)
