@@ -103,7 +103,9 @@ class dataManager(object):
     def resetCheck(self):
        # print "reset check"
         for id in self.storage:
-            self.storage[id]['filter'] = False
+            self.storage[id]['filter'] = self.checkInFilter(self.storage[id])
+            if not self.storage[id]['filter']:
+                self.GUIRemoveStream(id)
        # print self.storage
         
     def between(self, value, name, typ):
