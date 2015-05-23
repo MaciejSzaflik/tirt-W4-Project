@@ -217,13 +217,13 @@ class GUI(threading.Thread):
         self.panel = Tk.Label(labelpodglad)
         self.panel.place(x=5, y=10, width=620, height=480)
 
-	self.labelZVal = StringVar()
-	self.labelZVal.set("Z: ")
+        self.labelZVal = StringVar()
+        self.labelZVal.set("Z: ")
         self.labelZ=Label(labelpodglad, textvariable=self.labelZVal, bg=self.kolor3)
         self.labelZ.place(x=10,y=660)
 
-	self.labelDoVal = StringVar()
-	self.labelDoVal.set("Do: ")
+        self.labelDoVal = StringVar()
+        self.labelDoVal.set("Do: ")
         self.labelDo=Label(labelpodglad, textvariable=self.labelDoVal, bg=self.kolor3)
         self.labelDo.place(x=10,y=690)
 
@@ -267,7 +267,7 @@ class GUI(threading.Thread):
         widget = event.widget
         miniatura = (item for item in self.miniatury if item['thumbnail'] == widget).next()
         self.bigId = miniatura['id']
-	self.miniaturaID = miniatura['id']
+        self.miniaturaID = miniatura['id']
         print "bigId:" + str(self.bigId)
 
 
@@ -287,7 +287,7 @@ class GUI(threading.Thread):
                     im.load()
                 except IOError:
                     pass
-		self.updateThumbnail(id, im)
+  	            self.updateThumbnail(id, im)
                 if id == self.bigId:
                     self.updateBigImage(id, im)
 
@@ -298,9 +298,9 @@ class GUI(threading.Thread):
 
     def updateBigImage(self, id, image):
         miniatura = (item for item in self.miniatury if item["id"] == id).next()
-	self.labelZVal.set(miniatura['source'].cget("text"))
-	#self.labelZ.set(zVal)
-	self.labelDoVal.set(miniatura['destination'].cget("text"))
+        self.labelZVal.set(miniatura['source'].cget("text"))
+        #self.labelZ.set(zVal)
+        self.labelDoVal.set(miniatura['destination'].cget("text"))
         temp=image.resize((620, 480), Image.ANTIALIAS)
         img2 = ImageTk.PhotoImage(temp)
         self.panel.configure(image = img2)
@@ -308,10 +308,6 @@ class GUI(threading.Thread):
 
 
     def updateThumbnail(self, id, image):
-
-        #img2 = ImageTk.PhotoImage(image)
-        # print img2.width()
-
         # resize image
         temp=image.resize((160, 120), Image.ANTIALIAS)
         img2= ImageTk.PhotoImage(temp)
