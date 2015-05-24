@@ -24,6 +24,34 @@ from cStringIO import StringIO
 from Coder.encode import encode
 from Coder.decode import decode
 
+def resize(width, height, data):
+    img = Image.open(StringIO(data))
+
+    try:
+        img.load()
+    except IOError:
+        pass
+
+    img = img.resize((width, height), Image.ANTIALIAS)
+
+    output = StringIO()
+    img.save(output, format='JPEG')
+
+    imageData = output.getvalue()
+    output.close()
+
+    return imageData
+
+def resizzer(data, size):
+    width = 10
+    height = 10
+    if size == 'big':
+        width = 620
+        height = 480
+    else:
+        width = 160
+        height = 120
+    return resize(width, height, data)
 
 ##############
 ## nowe GUI ##
@@ -47,10 +75,16 @@ class GUI(threading.Thread):
 
     dataManagerController = DevServiceController("dataManager_service.json")
 
+    # protocols checkboxex control variables
     wybor1 = 1
     wybor2 = 0
     wybor3 = 0
     wybor4 = 0
+    
+    # effects checkboxex control variables
+    invertedColors = 0
+    monochrome = 0
+    blur = 0
 
     source_addres_start = "127.0.0.1"
     source_addres_end = "127.0.0.1"
@@ -68,11 +102,17 @@ class GUI(threading.Thread):
 
     def run(self):
         self.root = Tk.Tk()
+        
+        #icon = PhotoImage(file=)
+        #self.root.iconphoto('@icon.xbm')
+        img = PhotoImage(file='icon.png')
+        self.root.call('wm', 'iconphoto', self.root._w, img)
         self.root.protocol('WM_DELETE_WINDOW', self._stop_program)
         self.root.geometry("1044x768")
         self.root.resizable(width=FALSE, height=FALSE)
 
         self.root.title("Main frame")
+        
         #self.frame = Tk.Frame(self.root)
        # self.frame.pack()
 
@@ -212,22 +252,48 @@ class GUI(threading.Thread):
         #okno podgladu (te duze)
         labelpodglad = LabelFrame(self.root,bg=self.kolor3)
         labelpodglad.place(x=410,width = 634, height = 768)
+        
+        # obrazek tła
+        bgImage = PhotoImage(file='background.png')
+        labelBgImage = Label(labelpodglad, image=bgImage)
+        labelBgImage.place(x=366, y=500)
 
         #tutaj nie wiem jak ogrnac tego strema aby byl wrzucam tylko labela zeby bylo wiadomo w ktorym miejscu
         self.panel = Tk.Label(labelpodglad)
         self.panel.place(x=5, y=10, width=620, height=480)
 
-	self.labelZVal = StringVar()
-	self.labelZVal.set("Z: ")
-        self.labelZ=Label(labelpodglad, textvariable=self.labelZVal, bg=self.kolor3)
-        self.labelZ.place(x=10,y=660)
+        self.labelStreamInfo=Label(labelpodglad, text="Informacje o strumieniu", font="Verdana 14 bold", bg=self.kolor3)
+        self.labelStreamInfo.place(x=10,y=500)
 
-	self.labelDoVal = StringVar()
-	self.labelDoVal.set("Do: ")
-        self.labelDo=Label(labelpodglad, textvariable=self.labelDoVal, bg=self.kolor3)
-        self.labelDo.place(x=10,y=690)
+        self.labelZVal = StringVar()
+        self.labelZVal.set("Z: ")
+        self.labelZ=Label(labelpodglad, textvariable=self.labelZVal, font="Verdana 14", bg=self.kolor3)
+        self.labelZ.place(x=10,y=530)
 
-	
+        self.labelDoVal = StringVar()
+        self.labelDoVal.set("Do: ")
+        self.labelDo=Label(labelpodglad, textvariable=self.labelDoVal, font="Verdana 14", bg=self.kolor3)
+        self.labelDo.place(x=10,y=555)
+        
+        self.labelStreamEffects=Label(labelpodglad, text="Efekty", font="Verdana 14 bold", bg=self.kolor3)
+        self.labelStreamEffects.place(x=10,y=600)
+        
+        self.invertedColors=IntVar()
+        self.invertedColors.set(0)
+        self.monochrome=IntVar()
+        self.monochrome.set(0)
+        self.blur=IntVar()
+        self.blur.set(0)
+
+        checkInvertedColors = Checkbutton(labelpodglad, text='Odwrócone kolory', font="Verdana 14", variable=self.invertedColors, onvalue=1, offvalue=0, bg=self.kolor3)
+        checkInvertedColors.place(x=10, y=640)
+        
+        checkMonochrome = Checkbutton(labelpodglad, text='Odcienie szarości', font="Verdana 14", variable=self.monochrome, onvalue=1, offvalue=0, bg=self.kolor3)
+        checkMonochrome.place(x=10, y=680)
+        
+        checkBlur = Checkbutton(labelpodglad, text='Rozmycie', font="Verdana 14", variable=self.blur, onvalue=1, offvalue=0, bg=self.kolor3)
+        checkBlur.place(x=10, y=720)
+        
         self.root.mainloop()
 
     def updateFilters(self):
@@ -267,8 +333,10 @@ class GUI(threading.Thread):
         widget = event.widget
         miniatura = (item for item in self.miniatury if item['thumbnail'] == widget).next()
         self.bigId = miniatura['id']
-	self.miniaturaID = miniatura['id']
+        self.miniaturaID = miniatura['id']
         print "bigId:" + str(self.bigId)
+        self.bigOutput.send(encode({'type': 'resize'}, self.bigId))
+        
 
 
     def hide(self):
@@ -278,43 +346,46 @@ class GUI(threading.Thread):
         print "stopped"
         self.root.destroy()
 
-    def SIm(self, id, data_body, body_type):
+    def SIm(self, id, data_body, body_type, size):
         if body_type == 'http':
             try:
-                im = Image.open(StringIO(data_body))
+                im = None
+                try:
+                    im = Image.open(StringIO(resizzer(data_body, size)))
+                except Exception, e:
+                    print "err"
+                    print e.message
 
                 try:
                     im.load()
                 except IOError:
                     pass
-		self.updateThumbnail(id, im)
-                if id == self.bigId:
+
+                if id == self.bigId and size == 'big':
                     self.updateBigImage(id, im)
+                elif size == 'small':
+      	            self.updateThumbnail(id, im)
 
                 #self.updateThumbnail(id, im)
 
             except Exception, e:
-                "not able to set " + e.message
+                print "not able to set " + e.message
 
     def updateBigImage(self, id, image):
         miniatura = (item for item in self.miniatury if item["id"] == id).next()
-	self.labelZVal.set(miniatura['source'].cget("text"))
-	#self.labelZ.set(zVal)
-	self.labelDoVal.set(miniatura['destination'].cget("text"))
-        temp=image.resize((620, 480), Image.ANTIALIAS)
-        img2 = ImageTk.PhotoImage(temp)
+        self.labelZVal.set(miniatura['source'].cget("text"))
+        #self.labelZ.set(zVal)
+        self.labelDoVal.set(miniatura['destination'].cget("text"))
+        #temp=image.resize((620, 480), Image.ANTIALIAS)
+        img2 = ImageTk.PhotoImage(image)
         self.panel.configure(image = img2)
         self.panel.image = img2
 
 
     def updateThumbnail(self, id, image):
-
-        #img2 = ImageTk.PhotoImage(image)
-        # print img2.width()
-
         # resize image
-        temp=image.resize((160, 120), Image.ANTIALIAS)
-        img2= ImageTk.PhotoImage(temp)
+        #temp=image.resize((160, 120), Image.ANTIALIAS)
+        img2= ImageTk.PhotoImage(image)
 
         # skala_szer=160/img2.width()
         # skala_wysok=120/img2.height()
@@ -383,7 +454,11 @@ class GUI(threading.Thread):
         self.addThumbnail(streamData)
 
         self.bigId = streamData['id']
+        self.bigOutput.send(encode({'type': 'resize'}, self.bigId))
         print "added stream:" + str(streamData)
+
+    def setBigOutput(self, output):
+        self.bigOutput = output
 
 
 class GuiService(Service):
@@ -409,9 +484,12 @@ class GuiService(Service):
     # GŁÓWNA METODA USŁUGI
     def run(self):
         dataManager_input = self.get_input("dataManagerStreamInput")
+        self.gui.setBigOutput(self.get_output("guiOutput"))
+
         print "Gui service started."
         while self.running == 1:
             data = dataManager_input.read()
+            #print "received from data manager " + str(len(data))
             packetData = decode(data)
 
             if not packetData == None:
@@ -421,9 +499,14 @@ class GuiService(Service):
                     self.gui.addStream(packetData)
                     pass
 
+                elif packetData['data']['type'] == 'remove':
+                    # id jest w body
+                    #self.gui.removeStream(packetData)
+                    print "REMOVED " + str(packetData['body'])
+
                 elif packetData['data']['type'] == 'packet':
-                    self.gui.SIm(packetData['data']['id'], packetData['body'], packetData['data']['body_type'])
-		
+                    #print "notified:" + str(packetData['data'])
+                    self.gui.SIm(packetData['data']['id'], packetData['body'], packetData['data']['body_type'], packetData['data']['size'])
 
 if __name__=="__main__":
     sc = ServiceController(GuiService, "gui_service.json")

@@ -60,7 +60,7 @@ class dataManager(object):
     def updateFilters(self, values):
         pass
         
-    def setDataManagerGUIOutput(self, output):
+    def setdataManagerVideoEffectsOutput(self, output):
         self.dataManager_gui_output = output
 
     def setFilterValue(self, data, value):
@@ -247,7 +247,7 @@ class WireThread(threading.Thread):
         print "DataManager::wireInputThread started!"
         wire_input = self.service.get_input("wireInput")
         dataManager_videoChecker_output = self.service.get_output("dataManagerVideoCheckerOutput")
-        dataManager_gui_output = self.service.get_output("dataManagerGUIOutput")
+        dataManager_gui_output = self.service.get_output("dataManagerVideoEffectsOutput")
 
         while self.service.running == 1:   #pętla główna
             try:
@@ -291,7 +291,7 @@ class VideoCheckerThread(threading.Thread):
     def run(self):
         print "DataManager::videoCheckerInputThread started!"
         videoChecker_input = self.service.get_input("videoCheckerInput")
-        dataManager_gui_output = self.service.get_output("dataManagerGUIOutput")
+        dataManager_gui_output = self.service.get_output("dataManagerVideoEffectsOutput")
 
         while self.service.running == 1:   #pętla główna
             try:
@@ -377,11 +377,11 @@ class DataManagerService(Service):
         self.declare_input("guiInput", InputMessageConnector(self))
 
     def declare_outputs(self):
-        self.declare_output("dataManagerGUIOutput", OutputMessageConnector(self))
+        self.declare_output("dataManagerVideoEffectsOutput", OutputMessageConnector(self))
         self.declare_output("dataManagerVideoCheckerOutput", OutputMessageConnector(self))
 
     def run(self):	#główna metoda
-        self.manager.setDataManagerGUIOutput(self.get_output("dataManagerGUIOutput"))
+        self.manager.setdataManagerVideoEffectsOutput(self.get_output("dataManagerVideoEffectsOutput"))
         print "DataManager service started!"
         thread1 = WireThread(self, self.manager)
         thread2 = VideoCheckerThread(self, self.manager)

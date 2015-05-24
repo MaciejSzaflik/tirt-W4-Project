@@ -75,10 +75,16 @@ class GUI(threading.Thread):
 
     dataManagerController = DevServiceController("dataManager_service.json")
 
+    # protocols checkboxex control variables
     wybor1 = 1
     wybor2 = 0
     wybor3 = 0
     wybor4 = 0
+    
+    # effects checkboxex control variables
+    invertedColors = 0
+    monochrome = 0
+    blur = 0
 
     source_addres_start = "127.0.0.1"
     source_addres_end = "127.0.0.1"
@@ -96,11 +102,17 @@ class GUI(threading.Thread):
 
     def run(self):
         self.root = Tk.Tk()
+        
+        #icon = PhotoImage(file=)
+        #self.root.iconphoto('@icon.xbm')
+        img = PhotoImage(file='icon.png')
+        self.root.call('wm', 'iconphoto', self.root._w, img)
         self.root.protocol('WM_DELETE_WINDOW', self._stop_program)
         self.root.geometry("1044x768")
         self.root.resizable(width=FALSE, height=FALSE)
 
         self.root.title("Main frame")
+        
         #self.frame = Tk.Frame(self.root)
        # self.frame.pack()
 
@@ -240,22 +252,48 @@ class GUI(threading.Thread):
         #okno podgladu (te duze)
         labelpodglad = LabelFrame(self.root,bg=self.kolor3)
         labelpodglad.place(x=410,width = 634, height = 768)
+        
+        # obrazek tła
+        bgImage = PhotoImage(file='background.png')
+        labelBgImage = Label(labelpodglad, image=bgImage)
+        labelBgImage.place(x=366, y=500)
 
         #tutaj nie wiem jak ogrnac tego strema aby byl wrzucam tylko labela zeby bylo wiadomo w ktorym miejscu
         self.panel = Tk.Label(labelpodglad)
         self.panel.place(x=5, y=10, width=620, height=480)
 
+        self.labelStreamInfo=Label(labelpodglad, text="Informacje o strumieniu", font="Verdana 14 bold", bg=self.kolor3)
+        self.labelStreamInfo.place(x=10,y=500)
+
         self.labelZVal = StringVar()
         self.labelZVal.set("Z: ")
-        self.labelZ=Label(labelpodglad, textvariable=self.labelZVal, bg=self.kolor3)
-        self.labelZ.place(x=10,y=660)
+        self.labelZ=Label(labelpodglad, textvariable=self.labelZVal, font="Verdana 14", bg=self.kolor3)
+        self.labelZ.place(x=10,y=530)
 
         self.labelDoVal = StringVar()
         self.labelDoVal.set("Do: ")
-        self.labelDo=Label(labelpodglad, textvariable=self.labelDoVal, bg=self.kolor3)
-        self.labelDo.place(x=10,y=690)
+        self.labelDo=Label(labelpodglad, textvariable=self.labelDoVal, font="Verdana 14", bg=self.kolor3)
+        self.labelDo.place(x=10,y=555)
+        
+        self.labelStreamEffects=Label(labelpodglad, text="Efekty", font="Verdana 14 bold", bg=self.kolor3)
+        self.labelStreamEffects.place(x=10,y=600)
+        
+        self.invertedColors=IntVar()
+        self.invertedColors.set(0)
+        self.monochrome=IntVar()
+        self.monochrome.set(0)
+        self.blur=IntVar()
+        self.blur.set(0)
 
-	
+        checkInvertedColors = Checkbutton(labelpodglad, text='Odwrócone kolory', font="Verdana 14", variable=self.invertedColors, onvalue=1, offvalue=0, bg=self.kolor3)
+        checkInvertedColors.place(x=10, y=640)
+        
+        checkMonochrome = Checkbutton(labelpodglad, text='Odcienie szarości', font="Verdana 14", variable=self.monochrome, onvalue=1, offvalue=0, bg=self.kolor3)
+        checkMonochrome.place(x=10, y=680)
+        
+        checkBlur = Checkbutton(labelpodglad, text='Rozmycie', font="Verdana 14", variable=self.blur, onvalue=1, offvalue=0, bg=self.kolor3)
+        checkBlur.place(x=10, y=720)
+        
         self.root.mainloop()
 
     def updateFilters(self):
@@ -438,14 +476,14 @@ class GuiService(Service):
         #self.gui._stop_program()
 
     def declare_inputs(self):
-        self.declare_input("dataManagerStreamInput", InputMessageConnector(self))
+        self.declare_input("videoEffectsStreamInput", InputMessageConnector(self))
 
     def declare_outputs(self):	#deklaracja wyjść
         self.declare_output("guiOutput", OutputMessageConnector(self))
 
     # GŁÓWNA METODA USŁUGI
     def run(self):
-        dataManager_input = self.get_input("dataManagerStreamInput")
+        dataManager_input = self.get_input("videoEffectsStreamInput")
         self.gui.setBigOutput(self.get_output("guiOutput"))
 
         print "Gui service started."

@@ -1,9 +1,9 @@
 {
   "parametersHost": "localhost:20074",
   "inputs": {
-    "dataManagerStreamInput": {
+    "videoEffectsStreamInput": {
       "ip": "127.0.0.1",
-      "port": 20078
+      "port": 20080
     }
   },
   "outputs": {
