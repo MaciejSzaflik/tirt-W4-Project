@@ -1,0 +1,22 @@
+{
+  "parametersHost": "localhost:20081",
+  "inputs": {
+    "dataManagerStreamInput": {
+      "ip": "127.0.0.1",
+      "port": 20078
+    }
+  },
+  "outputs": {
+    "videoEffectsGUIOutput": {
+      "ip": "127.0.0.1",
+      "port": 20080
+    }
+  },
+  
+  "parameters": {
+    "invertedColors": false,
+    "monochrome": true,
+    "blur": false
+  }
+}
+
