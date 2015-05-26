@@ -105,8 +105,8 @@ class GUI(threading.Thread):
         
         #icon = PhotoImage(file=)
         #self.root.iconphoto('@icon.xbm')
-        img = PhotoImage(file='icon.png')
-        self.root.call('wm', 'iconphoto', self.root._w, img)
+        #img = PhotoImage(file='icon.png')
+        #self.root.call('wm', 'iconphoto', self.root._w, img)
         self.root.protocol('WM_DELETE_WINDOW', self._stop_program)
         self.root.geometry("1044x768")
         self.root.resizable(width=FALSE, height=FALSE)
@@ -254,9 +254,9 @@ class GUI(threading.Thread):
         labelpodglad.place(x=410,width = 634, height = 768)
         
         # obrazek tła
-        bgImage = PhotoImage(file='background.png')
-        labelBgImage = Label(labelpodglad, image=bgImage)
-        labelBgImage.place(x=366, y=500)
+        #bgImage = PhotoImage(file='background.png')
+        #labelBgImage = Label(labelpodglad, image=bgImage)
+        #labelBgImage.place(x=366, y=500)
 
         #tutaj nie wiem jak ogrnac tego strema aby byl wrzucam tylko labela zeby bylo wiadomo w ktorym miejscu
         self.panel = Tk.Label(labelpodglad)
@@ -353,8 +353,9 @@ class GUI(threading.Thread):
                 try:
                     im = Image.open(StringIO(resizzer(data_body, size)))
                 except Exception, e:
-                    print "err"
-                    print e.message
+                    #print "err"
+                    #print e.message
+                    pass
 
                 try:
                     im.load()
@@ -369,7 +370,8 @@ class GUI(threading.Thread):
                 #self.updateThumbnail(id, im)
 
             except Exception, e:
-                print "not able to set " + e.message
+                #print "not able to set " + e.message
+                pass
 
     def updateBigImage(self, id, image):
         miniatura = (item for item in self.miniatury if item["id"] == id).next()

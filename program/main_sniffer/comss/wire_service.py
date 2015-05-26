@@ -35,9 +35,13 @@ class WireService(Service):
         if self.mainSocket == 0:
             try:
                 self.mainSocket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
+                self.mainSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                #self.mainSocket.setsockopt(socket.IPPROTO_TCP, socket.TCP_CORK, 1) # przesylanie calego pakietu
+                socket.TCP_NOPUSH = 4
+                #self.mainSocket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NOPUSH, 1) # tez nie dziala
                 print "running v0.3"
             except socket.error, msg:
-                print 'Socket could not be created. Error Code: ' + str(msg[0]) + ' Message ' + msg[1]
+                print 'Socket could not be created. Error Code: ' + str(msg[0]) + ' Message: `' + msg[1] + '`'
                 sys.exit()
         else:
             print("pff")
