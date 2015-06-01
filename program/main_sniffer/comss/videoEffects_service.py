@@ -22,9 +22,9 @@ from Coder.decode import decode
 class VideoEffectsService(Service):
     running = 1
     
-    invertedColors = 0
-    monochrome = 1
-    blur = 0
+    invertedColors = False
+    monochrome = False
+    blur = False
     
     def __init__(self):
         Service.__init__(self)
@@ -55,46 +55,60 @@ class VideoEffectsService(Service):
         frame = 0
         im = 0
         
-        #if not packetData == None:
+        if not packetData == None:
             #print "received data:"
             #print data
-            #if packetData['data']['type'] == 'packet':
-            #    if self.invertedColors or self.monochrome or self.blur: #if any filter on
-            #        imgarray = packetData['body']
+            if packetData['data']['type'] == 'packet':
+                if self.invertedColors or self.monochrome or self.blur: #if any filter on
+                    imgarray = packetData['body']
 
                     #print imgarray
-            #        try:
-            #            im = Image.open(StringIO(imgarray))
+                    try:
 
-            #        except Exception, e:
-            #            print "FIRST FAIL"
-            #            print e
-            #            try:
-            #                im = Image.open(StringIO(imgarray[37:]))
+                        im = Image.open(StringIO(imgarray))
+                        im.load()
+
+                    except Exception, e:
+
+                        try:
+                            im = Image.open(StringIO(imgarray[37:]))
+                            im.load()
                             
-            #            except Exception, e:
-            #                pass
+                            #print im
                             
-            #        if not im == 0:
-            #            try:
-            #                frame = cv.CreateImageHeader(im.size, cv.IPL_DEPTH_8U, 3)
-            #                cv.SetData(frame, im.tostring())
-            #                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            #                cv2.imwrite('@klatka.jpg', frame)
-            #            except Exception, e:
-            #                print "OPENCV LOAD FAIL"
-            #                print e
-
-            #            print frame
-                        #stringFile = StringIO.StringIO()
+                        except Exception, e:
+                            pass
+                            
+                    #print im
+                    if not im == 0:
                         
-                        #packetData['body'] = stringFile
-                        
+                        try:
+                            im = im.convert('RGB')
+                            frame = numpy.array(im)
+                            # Convert RGB to BGR
+                            frame = frame[:, :, ::-1].copy()
+                            
+                            #apply effects conditionally
+                            
+                            if self.invertedColors:
+                                frame = cv2.bitwise_not(frame)
+                            if self.monochrome:
+                                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                            if self.blur:
+                                frame = cv2.blur(frame,(10,10)) 
+                            
+                            # opencv to jpg bytes
+                            img_body = cv2.imencode('.jpg', frame)[1].tostring()
+                            packetData['body'] = img_body
+                            
+                            data = encode(packetData['data'], packetData['body'])
 
-                    #print frame
-                    #ShowImage('videoEffects', frame)
-            #        streamId = packetData['data']['id']
-            #        data = encode(packetData['data'], packetData['body'])
+                        except Exception, e:
+                            #print "OPENCV LOAD FAIL"
+                            #print e
+                            #print "\n\n"
+                            pass
+                            
 
         self.videoEffects_output.send(data)
 
