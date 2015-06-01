@@ -74,6 +74,7 @@ class GUI(threading.Thread):
     kolor3='#aaaaaa'
 
     dataManagerController = DevServiceController("dataManager_service.json")
+    videoEffectsController = DevServiceController("videoEffects_service.json")
 
     # protocols checkboxex control variables
     wybor1 = 1
@@ -285,13 +286,13 @@ class GUI(threading.Thread):
         self.blur=IntVar()
         self.blur.set(0)
 
-        checkInvertedColors = Checkbutton(labelpodglad, text='Odwrócone kolory', font="Verdana 14", variable=self.invertedColors, onvalue=1, offvalue=0, bg=self.kolor3)
+        checkInvertedColors = Checkbutton(labelpodglad, text='Odwrócone kolory', font="Verdana 14", variable=self.invertedColors, bg=self.kolor3, command=self.updateEffects)
         checkInvertedColors.place(x=10, y=640)
         
-        checkMonochrome = Checkbutton(labelpodglad, text='Odcienie szarości', font="Verdana 14", variable=self.monochrome, onvalue=1, offvalue=0, bg=self.kolor3)
+        checkMonochrome = Checkbutton(labelpodglad, text='Odcienie szarości', font="Verdana 14", variable=self.monochrome, bg=self.kolor3, command=self.updateEffects)
         checkMonochrome.place(x=10, y=680)
         
-        checkBlur = Checkbutton(labelpodglad, text='Rozmycie', font="Verdana 14", variable=self.blur, onvalue=1, offvalue=0, bg=self.kolor3)
+        checkBlur = Checkbutton(labelpodglad, text='Rozmycie', font="Verdana 14", variable=self.blur, bg=self.kolor3, command=self.updateEffects)
         checkBlur.place(x=10, y=720)
         
         self.root.mainloop()
@@ -306,6 +307,30 @@ class GUI(threading.Thread):
         self.dataManagerController.update_params({"target_addres_start": self.target_addres_start.get()})
         self.dataManagerController.update_params({"target_addres_end": self.target_addres_end.get()})
         self.dataManagerController.update_params({"http": True if self.wybor1.get() == 1 else False})
+        
+    def updateEffects(self):
+        invertedColors = self.invertedColors.get()
+        monochrome = self.monochrome.get()
+        blur = self.blur.get()
+        
+        print "invertedColors: " + str(invertedColors)
+        print "monochrome: " + str(monochrome)
+        print "blur: " + str(blur)
+        
+        if invertedColors == 1:
+            self.videoEffectsController.update_params({"invertedColors": True})
+        else:
+            self.videoEffectsController.update_params({"invertedColors": False})
+            
+        if monochrome == 1:
+            self.videoEffectsController.update_params({"monochrome": True})
+        else:
+            self.videoEffectsController.update_params({"monochrome": False})
+            
+        if blur == 1:
+            self.videoEffectsController.update_params({"blur": True})
+        else:
+            self.videoEffectsController.update_params({"blur": False})
 
     def addThumbnail(self, streamData):
         miniatura = {}

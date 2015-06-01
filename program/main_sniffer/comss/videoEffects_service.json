@@ -15,7 +15,7 @@
   
   "parameters": {
     "invertedColors": false,
-    "monochrome": true,
+    "monochrome": false,
     "blur": false
   }
 }
