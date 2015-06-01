@@ -28,31 +28,19 @@ class VideoCheckerService(Service):
     def checkJPG(self, imgarray):
         try:
             im = Image.open(StringIO(imgarray))
-        except IOError, e:
-            #print "cannot im = Image.open"
-            return False
         except:
-            #print "cannot im = Image.open"
             return False
 
         try:
             im.load()
-        except IOError:
-            #print "cannot im.load"
-            pass
         except:
-            #print "cannot im = Image.open"
             return False
 
         return True
 
-    def anotherCheck(self, imgarray):
-        return False        
-
-    def run(self):	#główna metoda
-    
+    def run(self): #główna metoda
         print "VideoChecker service started!"
-        
+
         dataManager_input = self.get_input("dataManagerInput")
         videoCheckerOutput = self.get_output("videoCheckerOutput")
 
@@ -61,44 +49,44 @@ class VideoCheckerService(Service):
                 data = dataManager_input.read() #obiekt interfejsu
 
                 try:
-                    #print "received " + str(len(data))
                     packetData = decode(data)
-                    #print "VIDEOCHKR packetData size: " + str(len(data))
-                    if not packetData == None:
-                        imgarray = packetData['body']
+                    try:
+                        if not packetData == None:
+                            imgarray = packetData['body']
 
-                        if self.checkJPG(imgarray):
-                            packetData['data']['body_type'] = 'http'
-                            packetData['data']['offset'] = 0
-                            #print "1"
-                            dataToSend = encode(packetData['data'], '')
-                            #print "VIDEOCHKR output data size: " + str(len(dataToSend))
-                            videoCheckerOutput.send(dataToSend)
-                        elif self.checkJPG(imgarray[37:]):
-                            packetData['data']['body_type'] = 'http'
-                            packetData['data']['offset'] = 37
-                            #print "2"
-                            dataToSend = encode(packetData['data'], '')
-                            #print "VIDEOCHKR output data size: " + str(len(dataToSend))
-                            videoCheckerOutput.send(dataToSend)
-                        elif self.anotherCheck(imgarray):
+                            if self.checkJPG(imgarray):
+                                packetData['data']['body_type'] = 'http'
+                                packetData['data']['offset'] = 0
+                                dataToSend = encode(packetData['data'])
+                                videoCheckerOutput.send(dataToSend)
+                            elif self.checkJPG(imgarray[37:]):
+                                packetData['data']['body_type'] = 'http'
+                                packetData['data']['offset'] = 37
+                                dataToSend = encode(packetData['data'])
+                                videoCheckerOutput.send(dataToSend)
+                            else:
+                                packetData['data']['body_type'] = False
+                                dataToSend = encode(packetData['data'])
+                                videoCheckerOutput.send(dataToSend)
+                    except Exception, e1:
+                        print e1.message
+                        try:
                             packetData['data']['body_type'] = False
-                            #print "3"
-                            dataToSend = encode(packetData['data'], '')
-                            #print "VIDEOCHKR output data size: " + str(len(dataToSend))
+                            print 'NOT by exc'
+                            dataToSend = encode(packetData['data'])
                             videoCheckerOutput.send(dataToSend)
-
-                except Exception, e:
+                        except Exception, e2:
+                            print e2.message
+                            pass
+                except Exception, e3:
+                    print e3.message
                     pass
 
-            except EOFError:
-                print "EOFError"
+            except Exception, e4:
+                print e4.message
                 pass
-            #except socket.error:
-            #    pass
-            
-                
 
 if __name__=="__main__":
     sc = ServiceController(VideoCheckerService, "videoChecker_service.json")
     sc.start()
+

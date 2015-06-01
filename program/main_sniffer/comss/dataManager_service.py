@@ -68,7 +68,7 @@ class dataManager(object):
         if not newValue == None:
             if not self.filterOptions[value] == newValue:
                 self.filterOptions[value] = newValue
-                print "newValue" + str(newValue)
+                #print "newValue" + str(newValue)
                 return True
         return False
 
@@ -95,25 +95,20 @@ class dataManager(object):
             change = True
 
         #self.setFilterValue(data, 'http')
-        
-        #print data
+
         if change:
             self.resetCheck()
 
     def resetCheck(self):
-       # print "reset check"
         for id in self.storage:
             self.storage[id]['filter'] = self.checkInFilter(self.storage[id]['packet'])
             if not self.storage[id]['filter']:
                 self.GUIRemoveStream(id)
-       # print self.storage
         
     def between(self, value, name, typ):
         if typ == 'port':
-        #    print "between port value " + str(value) + " | filterOptions: " + str(self.filterOptions.get(name + '_start', 0)) + " - " + str(self.filterOptions.get(name + '_end', 10000000))
             return (value >= self.filterOptions.get(name + '_start', 0)) and (value <= self.filterOptions.get(name + '_end', 10000000))
         elif typ == 'ip':
-      #      print "between ip value " + str(value) + " | filterOptions: " + str(IPv4Address(self.filterOptions.get(name + '_start'))) + " - " +  str(IPv4Address(self.filterOptions.get(name + '_end')))
             return (IPv4Address(value) >= IPv4Address(self.filterOptions.get(name + '_start'))) and (IPv4Address(value) <= IPv4Address(self.filterOptions.get(name + '_end')))
         else:
             return False
@@ -122,15 +117,11 @@ class dataManager(object):
         return self.filterOptions.get(packetData.get(name, None))
 
     def checkInFilter(self, packetData):
-       # print "!!! " + str(packetData)
         return ( self.between(packetData['source']['port'], 'source_port', 'port')  and
           self.between(packetData['target']['port'], 'target_port', 'port') and
           self.between(packetData['source']['address'], 'source_addres', 'ip') and
           self.between(packetData['target']['address'], 'target_addres', 'ip') )#and
           #self.equals(packetData, 'body_type')
-
-    def saveNewPacket(self, id, packetData, dataManager_gui_output):
-        dataManager_gui_output.send(encode({'type': 'id', 'data': packetData}, id))
 
     def createId(self, packetData):
         return packetData['source']['address'] + str(packetData['source']['port']) + packetData['target']['address'] + str(packetData['target']['port'])
@@ -139,21 +130,15 @@ class dataManager(object):
     def removeOldElementsInterval(self):
         if self.service.running == 1:
             threading.Timer(10.0, self.removeOldElementsInterval).start()
-            #print "interval"
-            
+
             toRemove = {}
             
             for id in self.storage:
-                #print str(id) + ' ' + str(self.storage[id]) + ' ' + str(datetime.now())
-
                 if isinstance(self.storage[id].get('state', None), basestring):
-                    #print "TAK"
                     prev = self.storage[id].get('time', None)
                     now = datetime.now()
                     if not prev == None:
-                        #print str(int((now - prev).total_seconds() * 1000)) + ' ' + str(int((now - prev).total_seconds() * 1000) > 15000)
                         if int((now - prev).total_seconds() * 1000) > 15000:
-                            #print "REMOVE"
                             self.GUIRemoveStream(id)
                             toRemove[id] = True
 
@@ -161,7 +146,6 @@ class dataManager(object):
                 del self.storage[id]
 
     def GUIRemoveStream(self, id):
-        #print "GUIRemoveStream " + id
         self.dataManager_gui_output.send(encode({'type': 'remove'}, id))
 
     def notifyGUI(self, id, body_type, parsedVideoPacket_data, dataManager_gui_output):
@@ -174,32 +158,25 @@ class dataManager(object):
             dataManager_gui_output.send(encode({'type': 'packet', 'id': id, 'body_type': body_type, 'size': size}, parsedVideoPacket_data))
             self.storage[id]['time'] = datetime.now()
 
-
+    idd = 0
 
     def handleWire(self, packetData, parsedVideoPacket_data, dataManager_videoChecker_output, dataManager_gui_output):
         id = self.createId(packetData)
-        
-        #print "id " + id
 
         value = self.storage.get(id, None)
-        #print "value " + str(value)
-        if value == None:
-            #print "val non"
+        if value == None: # nowa wartosc
             self.storage[id] = {}
-            #print "saved?"
-            if self.checkInFilter(packetData):
-                #print "checked + in filter"
+            if self.checkInFilter(packetData): # sprawdzenie w filtrze
                 self.storage[id]['filter'] = True
                 self.storage[id]['packet'] = packetData
                 dataManager_videoChecker_output.send(encode({'id': id}, parsedVideoPacket_data))
-            else:
-                #print "checked - in filter"
+            else: # niespelnia zalozen filtra
                 self.storage[id]['filter'] = False
-        elif self.storage[id]['filter'] == True:
-            #print "state " + value['state'] + " " + str(isinstance(value['state'], str)) + " " + str(isinstance(value['state'], basestring))
-            if isinstance(value['state'], basestring):
-                #print "notifyGUI"
+        elif self.storage[id]['filter'] == True: # istnieje i przeszlo pomyslnie test filtra
+            if isinstance(value['state'], basestring): # pomyslnie zweryfikowane w videoChecker
                 self.notifyGUI(id, value['state'], parsedVideoPacket_data[value['offset']:], dataManager_gui_output)
+            elif value['state'] == False and self.storage[id]['state_count'] < 16: # niepomyslnie zweryfikowane ale ponawiamy probe
+                dataManager_videoChecker_output.send(encode({'id': id}, parsedVideoPacket_data))
             #elif value['state'] == True: # is being checked in videoChecker
             #elif value['state'] == False: # negatively verified in videoChecker
         elif self.checkInFilter(packetData['data']):
@@ -210,23 +187,18 @@ class dataManager(object):
     def handleVideoChecker(self, packetData, dataManager_gui_output):
         id = packetData['id']
 
-        #print "id in vch " + id
-        #print "contents " + str(self.storage[id])
-
         if self.storage[id]['filter'] == True: # if was waiting for check
             self.storage[id]['state'] = packetData['body_type']
-            self.storage[id]['offset'] = packetData['offset']
+            if self.storage[id]['state'] == False:
+                if self.storage[id].get('state_count', None) == None:
+                    self.storage[id]['state_count'] = 1
+                else:
+                    self.storage[id]['state_count'] += 1
+            else:
+                self.storage[id]['offset'] = packetData['offset']
 
-            self.saveNewPacket(id, self.storage[id]['packet'], dataManager_gui_output)
-            self.storage[id]['packet'] = None
-
-    # action to be added in main LOOP of comss
-    def receiveWire(self, packetData, parsedVideoPacket_data, dataManager_videoChecker_output, dataManager_gui_output):
-        self.handleWire(packetData, parsedVideoPacket_data, dataManager_videoChecker_output, dataManager_gui_output)
-
-    # action to be added in main LOOP of comss
-    def receiveVideoChecker(self, packetData, dataManager_gui_output):
-        self.handleVideoChecker(packetData, dataManager_gui_output)
+                dataManager_gui_output.send(encode({'type': 'id', 'data': self.storage[id]['packet']}, id))
+                self.storage[id]['packet'] = None
 
     def setBigImage(self, id):
         if not self.storage.get(id, None) == None:
@@ -267,19 +239,15 @@ class WireThread(threading.Thread):
     
                 data = wire_input.read() #obiekt interfejsu
                 
-                if len(data) > 800:
-                    #print "received from wire " + str(len(data))
+                if len(data) > 100:
                     try:
                         packetData = decode(data)
-                        #print "DATAMGR packetData size: " + str(len(data))
                         if not packetData == None:
-                            self.manager.receiveWire(packetData['data'], packetData['body'], dataManager_videoChecker_output, dataManager_gui_output)
+                            self.manager.handleWire(packetData['data'], packetData['body'], dataManager_videoChecker_output, dataManager_gui_output)
                     except Exception, e:
-                    #    print "some error " + e.message
                         pass
                 
             except EOFError:
-              #  print "EOFError"
                 pass
 
 class VideoCheckerThread(threading.Thread):
@@ -318,7 +286,7 @@ class VideoCheckerThread(threading.Thread):
                     #print "v ch " + str(packetData)
                     #print "DATAMGR packetData size: " + str(len(data))
                     if not packetData == None:
-                        self.manager.receiveVideoChecker(packetData['data'], dataManager_gui_output)
+                        self.manager.handleVideoChecker(packetData['data'], dataManager_gui_output)
                 except Exception, e:
                 #    print "some error " + e.message
                     pass

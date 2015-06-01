@@ -472,10 +472,10 @@ class GuiService(Service):
         signal.signal(signal.SIGINT,  self.stop)
         signal.signal(signal.SIGTSTP, self.stop)
 
-    def stop(self):
+    def stop(self, a=None, b=None):
         self.running = 0
         print "stop in self"
-        #self.gui._stop_program()
+        self.gui._stop_program()
 
     def declare_inputs(self):
         self.declare_input("videoEffectsStreamInput", InputMessageConnector(self))
