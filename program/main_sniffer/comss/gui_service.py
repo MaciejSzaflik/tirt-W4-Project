@@ -95,6 +95,8 @@ class GUI(threading.Thread):
     target_addres_end = "127.0.0.1"
     target_port_start = 1000
     target_port_end = 80000
+    
+    onair_image = 0
 
 
     def __init__(self):
@@ -104,6 +106,11 @@ class GUI(threading.Thread):
     def run(self):
         self.root = Tk.Tk()
         
+        icon = PhotoImage(file='icon.png')
+        self.root.call('wm', 'iconphoto', self.root._w, icon)
+        
+        self.onair_image = PhotoImage(file='onair.png')
+        
         #icon = PhotoImage(file=)
         #self.root.iconphoto('@icon.xbm')
         #img = PhotoImage(file='icon.png')
@@ -112,7 +119,7 @@ class GUI(threading.Thread):
         self.root.geometry("1044x768")
         self.root.resizable(width=FALSE, height=FALSE)
 
-        self.root.title("Main frame")
+        self.root.title("Video stream sniffer")
         
         #self.frame = Tk.Frame(self.root)
        # self.frame.pack()
@@ -122,7 +129,7 @@ class GUI(threading.Thread):
         labelfiltracja.place(width = 210, height = 768)
 
         #poczatek zakresu ip
-        label1=Label(labelfiltracja, text='Poczatek zrodlowych aresow IP:',bg=self.kolor3, wraplength=160)
+        label1=Label(labelfiltracja, text='Początek źródłowych IP:',bg=self.kolor3, wraplength=160)
         label1.place(x=5,y=20)
         self.source_addres_start = StringVar()
         self.source_addres_start.set('127.0.0.1')
@@ -131,7 +138,7 @@ class GUI(threading.Thread):
         entry1.get()
 
         #koniec zakresu ip
-        label2=Label(labelfiltracja, text='Koniec zrodlowych aresow IP:',bg=self.kolor3)
+        label2=Label(labelfiltracja, text='Koniec źródłowych IP:',bg=self.kolor3)
         label2.place(x=5,y=80)
         self.source_addres_end = StringVar()
         self.source_addres_end.set('127.0.0.1')
@@ -140,7 +147,7 @@ class GUI(threading.Thread):
         entry2.get()
 
         #poczatek zakresu portow
-        label3=Label(labelfiltracja, text='Poczatek zrodlowych portow:',bg=self.kolor3)
+        label3=Label(labelfiltracja, text='Początek źródłowych portów:',bg=self.kolor3)
         label3.place(x=5,y=140)
         self.source_port_start = StringVar()
         self.source_port_start.set('6000')
@@ -149,7 +156,7 @@ class GUI(threading.Thread):
         entry3.get()
 
         #koniec zakresu portow
-        label4=Label(labelfiltracja, text='Koniec zrodlowych portow:',bg=self.kolor3)
+        label4=Label(labelfiltracja, text='Koniec źródłowych portów:',bg=self.kolor3)
         label4.place(x=5,y=200)
         self.source_port_end = StringVar()
         self.source_port_end.set('7999')
@@ -157,7 +164,7 @@ class GUI(threading.Thread):
         entry4.place(x=5,y=230)
         entry4.get()
 
-        label5=Label(labelfiltracja, text='Poczatek docelowych aresow IP:',bg=self.kolor3)
+        label5=Label(labelfiltracja, text='Początek docelowych IP:',bg=self.kolor3)
         label5.place(x=5,y=260)
         self.target_addres_start = StringVar()
         self.target_addres_start.set('127.0.0.1')
@@ -166,7 +173,7 @@ class GUI(threading.Thread):
         entry5.get()
 
         #koniec zakresu ip
-        label6=Label(labelfiltracja, text='Koniec docelowych aresow IP:',bg=self.kolor3)
+        label6=Label(labelfiltracja, text='Koniec docelowych IP:',bg=self.kolor3)
         label6.place(x=5,y=320)
         self.target_addres_end = StringVar()
         self.target_addres_end.set('127.0.0.1')
@@ -175,7 +182,7 @@ class GUI(threading.Thread):
         entry6.get()
 
         #poczatek zakresu portow
-        label7=Label(labelfiltracja, text='Poczatek docelowych portow:',bg=self.kolor3)
+        label7=Label(labelfiltracja, text='Początek docelowych portów:',bg=self.kolor3)
         label7.place(x=5,y=380)
         self.target_port_start = StringVar()
         self.target_port_start.set('1000')
@@ -184,7 +191,7 @@ class GUI(threading.Thread):
         entry7.get()
 
         #koniec zakresu portow
-        label8=Label(labelfiltracja, text='Koniec docelowych portow:',bg=self.kolor3)
+        label8=Label(labelfiltracja, text='Koniec docelowych portów:',bg=self.kolor3)
         label8.place(x=5,y=440)
         self.target_port_end = StringVar()
         self.target_port_end.set('80000')
@@ -206,18 +213,18 @@ class GUI(threading.Thread):
         check1=Checkbutton(labelfiltracja, text='HTTP', variable=self.wybor1, onvalue=1, offvalue=0, bg=self.kolor3)
         check1.place(x=5, y=500)
 
-        check2=Checkbutton(labelfiltracja, text='protokol2', variable=self.wybor2, onvalue=1, offvalue=0, bg=self.kolor3)
+        check2=Checkbutton(labelfiltracja, text='protokol2', variable=self.wybor2, onvalue=1, offvalue=0, bg=self.kolor3, state='disabled')
         check2.place(x=5, y=530)
 
 
-        check3=Checkbutton(labelfiltracja, text='protokol3', variable=self.wybor3, onvalue=1, offvalue=0, bg=self.kolor3)
+        check3=Checkbutton(labelfiltracja, text='protokol3', variable=self.wybor3, onvalue=1, offvalue=0, bg=self.kolor3, state='disabled')
         check3.place(x=5, y=560)
 
-        check4=Checkbutton(labelfiltracja, text='protokol4', variable=self.wybor4, onvalue=1, offvalue=0, bg=self.kolor3)
+        check4=Checkbutton(labelfiltracja, text='protokol4', variable=self.wybor4, onvalue=1, offvalue=0, bg=self.kolor3, state='disabled')
         check4.place(x=5, y=590)
 
-	buttonusun=Button(labelfiltracja, text='Usun', command=self.removeStream)
-        buttonusun.place(x=65, y=670)
+#       buttonusun=Button(labelfiltracja, text='Usun', command=self.removeStream)
+#        buttonusun.place(x=65, y=670)
 
         buttonfiltruj=Button(labelfiltracja, text='Filtruj', command=self.updateFilters)
         buttonfiltruj.place(x=65, y=700)
@@ -253,6 +260,11 @@ class GUI(threading.Thread):
         #okno podgladu (te duze)
         labelpodglad = LabelFrame(self.root,bg=self.kolor3)
         labelpodglad.place(x=410,width = 634, height = 768)
+        
+        # obrazek tła
+        bgImage = PhotoImage(file='background.png')
+        labelBgImage = Label(labelpodglad, image=bgImage)
+        labelBgImage.place(x=366, y=500)
         
         # obrazek tła
         #bgImage = PhotoImage(file='background.png')
@@ -338,14 +350,14 @@ class GUI(threading.Thread):
         miniatura['id'] = streamData['id']
 
         miniatura['thumbnail'] = Label(self.labelminiatury)
-        self.labelminiatury.create_window(10, self.ileMiniatur*180+10, width=160, height=120, window=miniatura['thumbnail'], anchor=NW)
+        miniatura['thumbnailWnd'] = self.labelminiatury.create_window(10, self.ileMiniatur*180+10, width=160, height=120, window=miniatura['thumbnail'], anchor=NW)
         miniatura['thumbnail'].bind("<Button-1>", self.clickThumbnail)
 
         miniatura['source'] = Label(self.labelminiatury, text='Z:   ' + str(streamData['source']), bg=self.kolor3)
-        self.labelminiatury.create_window(10, self.ileMiniatur*180+130, window=miniatura['source'], anchor=NW)
+        miniatura['sourceWnd'] = self.labelminiatury.create_window(10, self.ileMiniatur*180+130, window=miniatura['source'], anchor=NW)
 
         miniatura['destination'] = Label(self.labelminiatury, text='Do: ' + str(streamData['target']), bg=self.kolor3)
-        self.labelminiatury.create_window(10, self.ileMiniatur*180+150, window=miniatura['destination'], anchor=NW)
+        miniatura['destinationWnd'] = self.labelminiatury.create_window(10, self.ileMiniatur*180+150, window=miniatura['destination'], anchor=NW)
 
         miniatura['yposition'] = self.ileMiniatur*180
 
@@ -359,6 +371,11 @@ class GUI(threading.Thread):
         miniatura = (item for item in self.miniatury if item['thumbnail'] == widget).next()
         self.bigId = miniatura['id']
         self.miniaturaID = miniatura['id']
+
+        miniatura['thumbnail'].configure(image = self.onair_image)
+        miniatura['thumbnail'].image = self.onair_image
+        
+        
         print "bigId:" + str(self.bigId)
         self.bigOutput.send(encode({'type': 'resize'}, self.bigId))
         
@@ -390,7 +407,7 @@ class GUI(threading.Thread):
                 if id == self.bigId and size == 'big':
                     self.updateBigImage(id, im)
                 elif size == 'small':
-      	            self.updateThumbnail(id, im)
+                       self.updateThumbnail(id, im)
 
                 #self.updateThumbnail(id, im)
 
@@ -425,31 +442,57 @@ class GUI(threading.Thread):
         self.root.update()
         self.root.deiconify()
 
-    def removeStream(self):
-	print self.miniaturaID
-	if not self.miniaturaID==0:
-		miniatura = (item for item in self.miniatury if item["id"] == self.miniaturaID).next()
-		print 'usuwanie'	
-		#self.labelminiatury.destroy(miniatura['thumbnail'])
-		miniatura['thumbnail'].destroy()
-        	miniatura['source'].destroy() 
-       		miniatura['destination'].destroy()
-		porownanie=miniatura['yposition']
-		#porownanie=porownanie/180
-		
-		print porownanie
-       		self.ileMiniatur = self.ileMiniatur-1
-		for i in self.miniatury:
-			print i['id']
-			print i['id'].index(i['id'])
-			if i['yposition'] > porownanie:
-				print i['yposition']
-				nowyY=(0*180)-170
-				miniatura['thumbnail'].configure(y=nowyY)
-       				miniatura['thumbnail'].y = nowyY
-			
-			
-	#def addThumbnail(self, streamData):
+    def removeStream(self, streamId):
+
+            miniatura = (item for item in self.miniatury if item["id"] == streamId).next()
+            
+            print "removing miniatura with id: " + str(streamId)
+            removedY = miniatura['yposition']
+            miniatura['thumbnail'].destroy()
+            miniatura['source'].destroy() 
+            miniatura['destination'].destroy()
+            self.ileMiniatur = self.ileMiniatur-1
+            self.miniatury.remove(miniatura)
+            print "removed miniatura"
+                    
+            for miniatura in self.miniatury:
+                
+                if miniatura['yposition'] > removedY:
+                    print "Moving up miniatura with id: " + str(miniatura['id'])
+                    old_y = miniatura['yposition']
+                    print "old_y: " + str(old_y)
+                    
+                    new_y = old_y - 170
+                    self.labelminiatury.delete(miniatura['thumbnailWnd'])
+                    self.labelminiatury.delete(miniatura['sourceWnd'])
+                    self.labelminiatury.delete(miniatura['destinationWnd'])
+                    miniatura['thumbnailWnd'] = self.labelminiatury.create_window(10, new_y+10, width=160, height=120, window=miniatura['thumbnail'], anchor=NW)
+                    miniatura['sourceWnd'] = self.labelminiatury.create_window(10, new_y+130, window=miniatura['source'], anchor=NW)
+                    miniatura['destinationWnd'] = self.labelminiatury.create_window(10, new_y+150, window=miniatura['destination'], anchor=NW)
+                    #miniatura['thumbnail'].place(y=new_y)  #configure(y = new_y)
+                    #miniatura['thumbnail'].y = new_y
+                    miniatura['yposition'] = new_y
+                    
+                    
+                    print "przeszlo"
+                
+                    #porownanie=miniatura['yposition']
+              #porownanie=porownanie/180
+              
+                
+
+#            print porownanie
+#            for i in self.miniatury:
+#                print i['id']
+#                print i['id'].index(i['id'])
+#                if i['yposition'] > porownanie:
+#                    print i['yposition']
+#                    nowyY=(0*180)-170
+#                    miniatura['thumbnail'].configure(y=nowyY)
+#                    miniatura['thumbnail'].y = nowyY
+               
+               
+     #def addThumbnail(self, streamData):
        # miniatura = {}
 ##
       #  miniatura['id'] = streamData['id']
@@ -505,7 +548,7 @@ class GuiService(Service):
     def declare_inputs(self):
         self.declare_input("videoEffectsStreamInput", InputMessageConnector(self))
 
-    def declare_outputs(self):	#deklaracja wyjść
+    def declare_outputs(self):     #deklaracja wyjść
         self.declare_output("guiOutput", OutputMessageConnector(self))
 
     # GŁÓWNA METODA USŁUGI
@@ -528,7 +571,7 @@ class GuiService(Service):
 
                 elif packetData['data']['type'] == 'remove':
                     # id jest w body
-                    #self.gui.removeStream(packetData)
+                    self.gui.removeStream(packetData['body'])
                     print "REMOVED " + str(packetData['body'])
 
                 elif packetData['data']['type'] == 'packet':

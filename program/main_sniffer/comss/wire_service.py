@@ -99,7 +99,7 @@ class WireService(Service):
                     self.storage[ID]['body'] += packetData['body']
                 else:
                     #wysłanie starych danych
-                    print "send " + str(self.storage[ID]['count'])
+                    #print "send " + str(self.storage[ID]['count'])
                     self.wire_output.send(encode(self.storage[ID]['data'], self.storage[ID]['body']))
                     # nowa sama paczka danych
                     self.storage[ID]['count'] = 1
