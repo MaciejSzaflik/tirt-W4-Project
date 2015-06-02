@@ -101,9 +101,12 @@ class dataManager(object):
 
     def resetCheck(self):
         for id in self.storage:
+            prev = self.storage[id]['filter']
             self.storage[id]['filter'] = self.checkInFilter(self.storage[id]['packet'])
             if not self.storage[id]['filter']:
                 self.GUIRemoveStream(id)
+            elif not prev:
+                self.dataManager_gui_output.send(encode({'type': 'id', 'data': self.storage[id]['packet']}, id))
         
     def between(self, value, name, typ):
         if typ == 'port':
@@ -198,7 +201,6 @@ class dataManager(object):
                 self.storage[id]['offset'] = packetData['offset']
 
                 dataManager_gui_output.send(encode({'type': 'id', 'data': self.storage[id]['packet']}, id))
-                self.storage[id]['packet'] = None
 
     def setBigImage(self, id):
         if not self.storage.get(id, None) == None:

@@ -106,10 +106,16 @@ class GUI(threading.Thread):
     def run(self):
         self.root = Tk.Tk()
         
-        icon = PhotoImage(file='icon.png')
-        self.root.call('wm', 'iconphoto', self.root._w, icon)
+        try:
+            icon = PhotoImage(file='icon.png')
+            self.root.call('wm', 'iconphoto', self.root._w, icon)
+        except:
+            pass
         
-        self.onair_image = PhotoImage(file='onair.png')
+        try:
+            self.onair_image = PhotoImage(file='onair.png')
+        except:
+            pass
         
         #icon = PhotoImage(file=)
         #self.root.iconphoto('@icon.xbm')
@@ -262,9 +268,12 @@ class GUI(threading.Thread):
         labelpodglad.place(x=410,width = 634, height = 768)
         
         # obrazek tła
-        bgImage = PhotoImage(file='background.png')
-        labelBgImage = Label(labelpodglad, image=bgImage)
-        labelBgImage.place(x=366, y=500)
+        try:
+            bgImage = PhotoImage(file='background.png')
+            labelBgImage = Label(labelpodglad, image=bgImage)
+            labelBgImage.place(x=366, y=500)
+        except:
+            pass
         
         # obrazek tła
         #bgImage = PhotoImage(file='background.png')
